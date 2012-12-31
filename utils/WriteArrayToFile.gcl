@@ -1,0 +1,17 @@
+# Routine to write an array to a file along with the element number
+# in columns
+
+PROCEDURE writearraytofile
+ PARAMETERS p1 filename=STRING
+ LOCAL tmp file filename
+ 
+ tmp = fields()	 # create a temp (blank) workspace
+ tmp.p1 = p1
+ tmp.c1 = dimensions(length(p1))  # create an array same length as p1
+ fill tmp.c1 1 1  # fill array, starting at 1 with steps of 1
+
+ file = asciifile:open:new(filename)		# open a new file
+ asciifile/writefree file _ " " tmp.c1 tmp.p1	# index, value
+ asciifile/close file				# close the file
+
+ENDPROCEDURE
