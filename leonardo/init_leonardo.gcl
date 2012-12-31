@@ -1,0 +1,15 @@
+ PROCEDURE init_leonardo
+  
+  module/load "open_leonardo.so"
+  
+  load "leo_load.gcl"
+  load "math.gcl"
+  load "mode.gcl"
+  load "leo_display.gcl"
+  load "leonardo.gcl"  
+  load "leocuts.gcl"
+  load "addition.gcl"
+ 
+ ENDPROCEDURE
+
+

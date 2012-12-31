@@ -1,0 +1,110 @@
+###################################################################
+#			  OPEN_Leonardo v1.0
+#               
+# 			S.I.Campbell & C.D.Frost
+# 				ISIS Facility
+#
+# Developed from IDL version of leonardo written by C.D.Frost
+#
+###################################################################
+#
+# MATH prepares the data for use by other parts of the program
+#
+###################################################################
+
+PROCEDURE MATH
+PARAMETERS d=workspace
+
+GLOBAL $PI dtr
+
+LOCAL dummy
+                                         
+ $pi = 3.141592654
+ dtr = 0.01745329251
+
+ printin " Number of energies : "d.num_e 
+ printin " Number of angles   : "d.num_p
+                                         
+# Select the current plotting mode
+
+  IF (d.plot_mode=1)
+	d.x_title = "Q\\dz\\u (\\A\\u-1\\d)"
+	d.y_title = "Q\\dx\\u (\\A\\u-1\\d)"
+	d.ordabs_x = "q"  
+	d.ordabs_y = "q"  
+	d.aspect = d.factors[1]/d.factors[3]
+  ENDIF
+  IF (d.plot_mode=2)
+	d.x_title = "Q\\dz\\u (\\A\\u-1\\d)"
+	d.y_title = "Q\\dy\\u (\\A\\u-1\\d)"  
+	d.ordabs_x = "q"  
+	d.ordabs_y = "q"  
+	d.aspect = d.factors[2]/d.factors[3]
+  ENDIF
+  IF (d.plot_mode=3)
+	d.x_title = "Q\\dx\\u (\\A\\u-1\\d)"
+	d.y_title = "Q\\dy\\u (\\A\\u-1\\d)"  
+	d.ordabs_x = "q"  
+	d.ordabs_y = "q"  
+	d.aspect = d.factors[2]/d.factors[1]
+  ENDIF
+  IF (d.plot_mode=4)
+	d.x_title = "Q\\dx\\u (\\A\\u-1\\d)"
+	d.y_title = "Energy Transfer (meV)"
+	d.ordabs_x = "q"  
+	d.ordabs_y = "e"  
+	d.aspect = 0.0
+  ENDIF
+  IF (d.plot_mode=5)
+	d.x_title = "Q\\dx\\u (\\A\\u-1\\d)"
+	d.y_title = "Energy Transfer (meV)"
+	d.ordabs_x = "q"  
+	d.ordabs_y = "e"  
+	d.aspect = 0.0
+  ENDIF
+  IF (d.plot_mode=6)
+	d.x_title = "Q\\dz\\u (\\A\\u-1\\d)"
+	d.y_title = "Energy Transfer (meV)"
+	d.ordabs_x = "q"  
+	d.ordabs_y = "e"  
+	d.aspect = 0.0
+  ENDIF
+  IF (d.plot_mode=7)
+  	d.x_title = "|Q| (\\A\\u-2\\d)"
+	d.y_title = "Energy Transfer (meV)"
+	d.ordabs_x = "q"  
+	d.ordabs_y = "e"  
+	d.aspect = 0.0
+  ENDIF
+  IF (d.plot_mode=8)
+	d.x_title = "2.072*|Q|\\u2\\d (\\A\\u-2\\d)"
+	d.y_title = "Energy Transfer (meV)"
+	d.ordabs_x = "r"  
+	d.ordabs_y = "e"  
+	d.aspect = 1.0
+  ENDIF
+  IF (d.plot_mode=9)
+	d.x_title = "Energy Transfer (meV)"
+	d.y_title = "Detector Angle"  
+	d.ordabs_x = "e"  
+	d.ordabs_y = "a"  
+	d.aspect = 0.0
+  ENDIF
+  
+  IF (d.plot_mode > 9) OR (d.plot_mode < 1)
+   printen " Illegal Plot Mode defined !!"
+  ENDIF
+ 
+	dummy <~ module:execute("calculate",d)
+
+#	d.c_x = dimensions(4,d.num_e*d.num_p)
+#	d.c_y = dimensions(4,d.num_e*d.num_p)
+
+	d.c_x <~ dummy.c_x
+	d.c_y <~ dummy.c_y
+	d.centre_x <~ dummy.centre_x
+	d.centre_y <~ dummy.centre_y
+
+ENDPROCEDURE
+
+ 

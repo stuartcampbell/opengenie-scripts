@@ -1,0 +1,42 @@
+ PROCEDURE scale
+ PARAMETERS wk1=workspace all=real qx=real qy=real qz=real
+  
+ IF (defined(qx))
+  printin " QX selected"
+  wk1.factors[1] = qx
+ ELSEIF (defined(qy))
+  printin " QY selected"
+  wk1.factors[2] = qy
+ ELSEIF (defined(qz))
+  printin " QZ selected"
+  wk1.factors[3] = qz
+ ELSEIF (defined(all))
+  printin " ALL selected"
+  fill wk1.factors all
+ ELSE
+  printin " Nothing done!!!"
+ ENDIF
+ 
+  math wk1 
+ 
+ ENDPROCEDURE
+
+
+
+ PROCEDURE psi
+ PARAMETERS wk1=workspace newpsi=real 
+
+  wk1.psi = newpsi 
+  math wk1
+
+ ENDPROCEDURE
+ 
+ PROCEDURE div
+ PARAMETERS wk1=workspace ndivide=real 
+
+  wk1.intensity = wk1.intensity/ndivide
+  wk1.error = wk1.error/ndivide
+
+ ENDPROCEDURE
+ 
+ 

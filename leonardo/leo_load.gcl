@@ -1,0 +1,102 @@
+###################################################################
+#				   OPEN_Leonardo v1.0
+#
+# 				S.I.Campbell & C.D.Frost
+# 					ISIS Facility
+#
+# Developed from IDL version of leonardo written by C.D.Frost
+#
+###################################################################
+#
+# LEO_LOAD	: reads in .SPE & .PAR files and sets up data workspace
+#
+###################################################################
+
+PROCEDURE leo_load
+PARAMETERS ei=real psi=real
+RESULT w
+
+LOCAL spefile parfile tmp speout parout
+
+# IF os() = "VMS"
+#  module/load "user$disk:[sic01.opengenie.leonardo]open_leonardo.so"
+# ELSE
+#  module/load "open_leonardo.so"
+# ENDIF
+
+## Set up general data structure ##
+ w=fields()
+ w.name="OPEN Leonardo"
+ w.x_title="x_title"
+ w.y_title="y_title"
+	w.ordabs_x = "x"
+	w.ordabs_y = "y"
+ w.factors=dimensions(3)
+	fill w.factors 1.0
+ w.aspect=0.0
+ w.zlimits=dimensions(2)
+	w.zlimits[1] = 0.0
+	w.zlimits[2] = 10.0
+ w.plot_mode = 1
+ w.colours = "rainbow"
+ w.n_colours = 80
+
+ w.vphi = 0.0
+ w.apsi = 0.0
+ w.vtheta = 0.0
+
+## Read in SPE datafile ##
+ spefile=inquire("Enter .SPE filename")
+ tmp=fields()
+ tmp.file=spefile
+
+# module/execute "init_leon" tmp
+# tmp=fields()
+# tmp.file=spefile
+ 
+# module/unload "open_leonardo.so"
+# module/compile "open_leonardo.for" symbols="init_leon, &
+# 		 getrun,getpar,calculate"
+# module/load "open_leonardo.so"
+ 
+ speout = module:execute("getrun", tmp)
+
+## Insert data into structure ##
+
+ w.num_p <~ speout.num_p
+ w.num_e <~ speout.num_e
+ w.error <~ speout.error
+ w.energy <~ speout.energy
+ w.phi <~ speout.phi
+ w.intensity <~ speout.values 
+ 
+ redim w.intensity w.num_e*w.num_p
+ redim w.error w.num_e*w.num_p
+
+## Read in PAR file ##
+ parfile=inquire("Enter .PAR filename")
+ tmp.par_file=parfile
+ tmp.num_p=w.num_p
+ parout = module:execute("getpar", tmp)
+
+# w.dets = parout.det_array
+ w.det_l2 <~ parout.det_array[1:w.num_p] 
+ w.det_phi <~ parout.det_array[(w.num_p+1):(2*w.num_p)] 
+ w.det_theta <~ parout.det_array[((2*w.num_p)+1):(3*w.num_p)] 
+ w.det_width <~ parout.det_array[((3*w.num_p)+1):(4*w.num_p)] 
+ w.det_height <~ parout.det_array[((4*w.num_p)+1):(5*w.num_p)] 
+ w.file=spefile
+ w.par_file=parfile
+
+ IF(ei = _) OR (ei = 0.0)
+	ei=INQUIRE("Please input value for incident neutron energy")
+ ENDIF
+
+ IF(psi = _) 
+	psi = 0.0
+ ENDIF
+
+ w.ei = ei
+ w.psi = psi
+	
+ENDPROCEDURE

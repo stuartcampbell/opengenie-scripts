@@ -1,0 +1,2 @@
+	REAL pi, dtr
+	PARAMETER (pi=3.141592654, dtr=0.01745329251)

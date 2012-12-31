@@ -1,0 +1,119 @@
+###################################################################
+# OPEN_Leonardo v1.0
+#
+# S.I.Campbell & C.D.Frost
+# ISIS Facility
+#
+# Developed from IDL version of leonardo written by C.D.Frost
+#
+###################################################################
+#
+# leo_cut :
+#
+###################################################################
+
+
+ PROCEDURE const_cut
+ PARAMETERS d=workspace 
+ LOCAL ct title_string n tmp vertcut horizcut
+ GLOBAL one_win two_win
+
+ leo_display d
+ 
+ tmp=getcursor(0.5,0.5)
+ vertcut=tmp.w_x
+ horizcut=tmp.w_y
+  
+ IF(defined(one_win))
+  select one_win
+  device/clear
+ ELSE
+  printin "Opening 1D plotting window"
+  one_win = device:open("xw",6.5,4.5)
+ ENDIF
+
+  redim d.intensity d.num_e d.num_p
+  redim d.error d.num_e d.num_p
+ 
+# Left mouse button pressed
+ IF (tmp.char = "A")
+ 
+   n=bracket(d.centre_x, vertcut)
+
+   IF(d.ordabs_x="e")
+    n=bracket(cut(d.centre_x,2,1.), vertcut)
+   ELSE
+    n=bracket(cut(d.centre_x,1,1.), vertcut)
+   ENDIF
+   
+   printi "Taking constant x cut at "vertcut 
+   printin " or bin number "n 
+
+   d.y = cut(d.intensity,1,n)
+   d.x = cut(d.centre_y,1,n)
+   d.e = cut(d.error,1,n)
+#  d.y = d.intensity[((d.num_p*n)+1):((n*d.num_p)+d.num_p)]
+#  d.x = d.centre_y[((d.num_p*n)+1):((n*d.num_p)+d.num_p)]
+#  d.e = d.error[((d.num_p*n)+1):((n*d.num_p)+d.num_p)]
+   d.xlabel = d.y_title
+   d.ylabel = "Neutron Counts"
+ 
+  ENDIF
+ 
+
+# Right mouse button pressed
+  IF (tmp.char = "D")
+
+   IF(d.ordabs_y="e")
+    n=bracket(cut(d.centre_y,2,1.), horizcut)
+   ELSE
+    n=bracket(cut(d.centre_y,1,1.), horizcut)
+   ENDIF
+
+   printi "Taking constant y cut at "horizcut 
+   printin " or bin number "n 
+
+   d.y = cut(d.intensity,2,n)
+   d.x = cut(d.centre_x,2,n)
+   d.e = cut(d.error,2,n)
+   d.xlabel = d.x_title
+   d.ylabel = "Neutron Counts"
+  ENDIF
+ 
+  redim d.intensity d.num_e*d.num_p
+  redim d.error d.num_e*d.num_p 
+ 
+  alter/markers $circle
+
+# limits/y ymin=d.zlimits[1] ymax=d.zlimits[2]
+
+  display/markers d ymin=d.zlimits[1] ymax=d.zlimits[2] 
+
+ ENDPROCEDURE
+
+###################################################################
+
+ PROCEDURE ccut
+ PARAMETERS d=workspace 
+ QUALIFIERS /errors /line
+ GLOBAL one_win two_win
+ CASE d.plot_mode
+ IS 9
+   const_cut d 
+ OTHERWISE
+  printen "Incorrect plot_mode select for this type of cut !"
+ ENDCASE
+
+ IF (line)
+  alter/plotcolour $green
+  plot/line d
+  alter/plotcolour $white
+ ENDIF
+
+ IF (errors)
+  alter/plotcolour $red
+  plot/errors
+  alter/plotcolour $white
+ ENDIF
+
+ ENDPROCEDURE

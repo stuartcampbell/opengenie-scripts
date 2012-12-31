@@ -1,0 +1,7 @@
+PROCEDURE MODE
+PARAMETERS d=workspace m=integer
+
+d.plot_mode=m
+#math d
+
+ENDPROCEDURE

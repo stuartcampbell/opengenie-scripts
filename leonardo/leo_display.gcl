@@ -1,0 +1,103 @@
+###################################################################
+# OPEN_Leonardo v1.0
+#
+# S.I.Campbell & C.D.Frost
+# ISIS Facility
+#
+# Developed from IDL version of leonardo written by C.D.Frost
+#
+###################################################################
+#
+# leo_display :
+#
+###################################################################
+
+ PROCEDURE leo_display
+ PARAMETERS d=workspace 
+ 
+ LOCAL ct polygons title_string xrange yrange w_size
+ LOCAL start_x start_y end_x end_y ratio screen_correction
+ LOCAL x_size y_size
+ GLOBAL one_win two_win one_pic two_pic wx_size wy_size
+
+ math d
+
+ wx_size = 4.5
+ wy_size = 4.5
+
+# IF(defined(two_win))
+#  delete item=two_pic
+#  select two_win
+#  device/clear
+# ELSE
+#  printin "Opening 2D plotting window"
+#  two_win = device:open("xw",wx_size,wy_size)
+# ENDIF
+
+  two_pic=picture()
+
+ IF(d.aspect!=0.000)
+   xrange = max(d.c_x) - min(d.c_x)
+   yrange = max(d.c_y) - min(d.c_y)
+   ratio = (yrange/xrange)*d.aspect
+ ELSE
+   ratio = 1.000
+ ENDIF
+
+ w_size=0.7
+ screen_correction = wx_size/wy_size
+ ratio = ratio*screen_correction
+
+ IF(ratio<1)
+   x_size = w_size
+   y_size = w_size*ratio
+ ELSE
+   x_size = w_size/ratio
+   y_size = w_size
+ ENDIF
+
+ start_x = 0.45 - ((x_size/2.0))
+ end_x = 0.45 + ((x_size/2.0))
+ start_y = 0.5 - ((y_size/2.0))
+ end_y = 0.5 + ((y_size/2.0))
+ 
+ win_twod start_x end_x start_y end_y d.c_x d.c_y 
+ 
+ IF (d.colours="rainbow")
+  ct = colourtable:rainbow(d.n_colours)
+ ELSE
+  ct = colourtable:heat(d.n_colours)
+ ENDIF
+
+ polygons=cell_array:draw:polygon(d.intensity,ct,d.c_x,d.c_y, &
+ valmin=d.zlimits[1],valmax=d.zlimits[2])
+
+ axes/draw
+ labels/draw d.x_title d.y_title
+ title_string=d.name+" : "+d.file+"   Plot_mode = "+as_string(d.plot_mode)
+ title/draw title_string
+
+# Draw colour wedge
+
+ win_unscaled 0.85 0.9 start_y end_y
+ cell_wedge/draw/vertical object=polygons
+ axes/draw/noxnum
+ 
+ win_twod start_x end_x start_y end_y d.c_x d.c_y
+ 
+ ENDPROCEDURE
+
+ PROCEDURE HARD
+ PARAMETERS file=string
+ QUALIFIERS /BW
+ GLOBAL two_win two_pic wx_size wy_size
+
+   IF (BW)
+    hardcopy file "ps" aspect=1.0
+   ELSE
+    hardcopy file "cps" aspect=1.0
+   ENDIF   
+   
+ ENDPROCEDURE
+                             
+

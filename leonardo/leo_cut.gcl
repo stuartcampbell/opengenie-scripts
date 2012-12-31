@@ -1,0 +1,58 @@
+###################################################################
+# OPEN_Leonardo v1.0
+#
+# S.I.Campbell & C.D.Frost
+# ISIS Facility
+#
+# Developed from IDL version of leonardo written by C.D.Frost
+#
+###################################################################
+#
+# leo_cut :
+#
+###################################################################
+
+ PROCEDURE const_e_cut
+ PARAMETERS d=workspace 
+ QUALIFIERS /errors
+ LOCAL ct title_string n tmp energycut
+ GLOBAL one_win two_win
+
+ leo_display d
+ 
+ tmp=getcursor()
+ energycut=tmp.w_x
+
+ printi "Taking constant energy cut at "energycut "meV"
+ 
+ n=bracket(d.energy, energycut)
+
+ printin " or bin number "n
+  
+ IF(defined(one_win)=$FALSE)
+  printin "Opening 1D plotting window"
+  one_win = device:open("xw",6.5,4.5)
+ ELSE
+  select one_win
+  device/clear
+ ENDIF
+ 
+  d.y = d.intensity[((d.num_p*n)+1):((n*d.num_p)+d.num_p)]
+  d.x = d.det_phi
+  d.e = d.error[((d.num_p*n)+1):((n*d.num_p)+d.num_p)]
+  d.xlabel = "Angle \\gf  (degrees)"
+  d.ylabel = "Neutron Counts / meV"
+
+ alter/markers $circle
+
+ limits/y ymin=d.zlimits[1] ymax=d.zlimits[2]
+
+ display/markers d
+
+ IF (errors)
+  alter/plotcolour $red
+  plot/errors
+  alter/plotcolour $white
+ ENDIF
+ 
+ ENDPROCEDURE

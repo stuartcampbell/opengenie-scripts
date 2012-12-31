@@ -1,0 +1,54 @@
+ PROCEDURE add2
+ PARAMETERS n=workspace m=workspace par_n=real par_m=real
+ RESULT res
+ LOCAL intensity error
+ 
+  IF(n.num_p!=m.num_p) OR (n.num_e!=m.num_e)
+   printen "Data structures are not compatable"
+  ELSEIF (n.ei!=m.ei)
+   printen "Incident Energies are not compatable"
+  ELSEIF (max(abs(n.energy-m.energy))>0.001)
+   printen "Energy bins are not compatable - please rebin data"
+  ELSE 
+   res=fields()
+   intensity = n.intensity*par_n + m.intensity*par_m
+   error = sqrt((n.error*par_n)*(n.error*par_n) + &
+   	       (m.error*par_m)*(m.error*par_m))
+   
+   res = n
+   res.intensity = intensity
+   res.error = error
+   
+  ENDIF
+   
+ ENDPROCEDURE
+ 
+ PROCEDURE add3
+ PARAMETERS n=workspace m=workspace o=workspace &
+ 	    par_n=real par_m=real par_o=real
+ RESULT res
+ LOCAL intensity error
+ 
+  IF(n.num_p!=m.num_p) OR (n.num_e!=m.num_e) OR &
+    (n.num_p!=o.num_p) OR (n.num_e!=o.num_e)
+   printen "Data structures are not compatable"
+  ELSEIF (n.ei!=m.ei) OR (o.ei!=n.ei)
+   printen "Incident Energies are not compatable"
+  ELSEIF (max(abs(n.energy-m.energy))>0.001) OR &
+         (max(abs(o.energy-n.energy))>0.001)
+   printen "Energy bins are not compatable - please rebin data"
+  ELSE 
+   res=fields()
+   intensity=n.intensity*par_n+m.intensity*par_m+o.intensity*par_o
+   error=sqrt((n.error*par_n)*(n.error*par_n) + &
+   	      (m.error*par_m)*(m.error*par_m) + &
+   	      (o.error*par_o)*(o.error*par_o))
+   res = n
+   res.intensity = intensity
+   res.error = error
+   
+  ENDIF
+   
+  ENDPROCEDURE
+  
+  
