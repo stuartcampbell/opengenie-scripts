@@ -1,0 +1,51 @@
+# TOSCA Startup file for OpenGENIE              
+# S I Campbell 27/7/99
+
+PROCEDURE genieinit_tosca
+GLOBAL home_dir
+
+#toggle/info/off
+
+home_dir="tosca$disk0:[tscmgr.opengenie]"
+home_dir="c:/opengenie/"
+
+# debug/on
+
+load home_dir+"alias.gcl"
+load home_dir+"sic_useful.gcl"
+
+load home_dir+"wexm.gcl"
+load home_dir+"clear.gcl"
+load home_dir+"convert.gcl"
+load home_dir+"zero_errors.gcl"
+load home_dir+"stretch.gcl"
+load home_dir+"qtemp.gcl"
+load home_dir+"qtemp_fb.gcl"
+load home_dir+"laser_plots.gcl"
+load home_dir+"loadlog.gcl"
+load home_dir+"temp_plot.gcl"
+load home_dir+"progs.gcl"
+
+#alias "tplot" "tp"
+#alias "tplotc" "tp:c"
+
+ENDPROCEDURE
+
+PROCEDURE toscadae
+  set/file "/.:/servers/tosca_dae"
+ENDPROCEDURE
+
+PROCEDURE dae
+  set/file "/.:/servers/tosca_dae"
+ENDPROCEDURE
+
+toggle/info/on
+
+ set/inst "TSC"
+ set/ext  "RAW"
+ set/disk "TOSCA$DISK0:"
+ set/dir  "[TSCMGR.DATA]"
+
+ genieinit_tosca
+ progs
+

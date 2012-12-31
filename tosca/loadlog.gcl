@@ -1,0 +1,80 @@
+# Simple procedure that reads in log files
+# Stuart Campbell (Nov 1998)
+#
+FORWARD average_temp
+
+PROCEDURE tp1
+QUALIFIERS /C /AVERAGE
+PARAMETERS run=INTEGER block=STRING channel=INTEGER units=STRING
+
+RESULT res
+LOCAL tmp safe run_no
+
+   tmp=fields()
+
+#   IF (block)
+#    tmp.block_name = block
+#   ELSE
+    tmp.block_name=inquire_string("Give SE block name")
+#   ENDIF
+
+#   IF (units)
+#    tmp.units = units
+#   ELSE
+    tmp.units = "K"
+#   ENDIF
+
+#   IF (channel)
+#    tmp.icol = channel
+#   ELSE
+    tmp.icol = inquire_integer("Which log column do you want ?")
+#   ENDIF
+   
+   safe = _current_extension
+
+  IF (C)
+   tmp.file = "tosca$disk0:[tscmgr.data]inst.log"
+   run_no = "CRPT"
+  ELSE
+   set/ext "log"
+   tmp.file=cfn(run)	
+   run_no = as_string(run)
+  ENDIF
+
+   module/load "user$disk:[sic01.opengenie.utils]load_log_sic.so"
+   res=module:execute("load_log",tmp)         
+   module/unload "user$disk:[sic01.opengenie.utils]load_log_sic.so"
+
+   set/ext safe
+    
+   res.file = tmp.file
+   res.run_no = run_no
+
+   IF (AVERAGE)
+    average_temp res
+   ENDIF
+                                                             
+ENDPROCEDURE
+
+PROCEDURE average_temp
+PARAMETERS tw=WORKSPACE tmin=REAL tmax=REAL
+RESULT out
+LOCAL average_t error_t lower upper
+
+   lower = 1
+   upper = length(tw.x)
+
+   IF DEFINED (tmin)
+    lower = bracket(tw.x, tmin)
+   ENDIF
+   IF DEFINED (tmax)
+    upper = bracket(tw.x, tmax)
+   ENDIF
+
+   average_t = sum(tw.y[(lower):(upper-1)])/length(tw.y[(lower):(upper-1)])
+   error_t = 0.0
+
+   printin "Average Temperature = "average_t" +- "error_t" K"
+
+ENDPROCEDURE
+

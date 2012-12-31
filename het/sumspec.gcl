@@ -1,0 +1,48 @@
+#
+# Stuart Campbell (ISIS) 3rd Feb 1999
+# last modified by SIC (3/2/99)
+
+PROCEDURE sumspec
+PARAMETERS smin=INTEGER smax=INTEGER tmin=REAL tmax=REAL
+RESULT w
+LOCAL tmp nspec
+
+ IF (smin=_)
+  smin = inquire_integer("First spectrum number")
+ ENDIF
+
+ IF (smax=_)
+  smax = inquire_integer("Last spectrum number ")
+ ENDIF
+
+ IF (tmin=_)
+  tmin = inquire_real("minimum tof")
+ ENDIF
+
+ IF (tmax=_)
+  tmax = inquire_real("maximum tof")
+ ENDIF
+ 
+ nspec = dimensions(smax-smin+1)
+ fill nspec smin 1
+ tmp = integrate(get(nspec),tmin,tmax)
+ toggle/info/off
+ w = fields()
+ w.y = tmp.sum
+ w.e = tmp.error
+ w.xlabel = "Spectrum number"
+ w.ylabel = "Integrated Intensity"
+ w.x = dimensions(length(nspec))
+ fill w.x smin*1.0 1.0
+ w.x = uncentre_bins(w.x)
+ w.bin_grouping = 0
+ w.spec_no = as_string(smin)+"-"+as_string(smax)
+ w.inst_name = get("NAME") 
+ w.user_name = get("USER")
+ w.run_no = as_string(get("RUN"))
+ w.time = substring(get("HDR"),53,20)
+ w.title = as_string(tmin)+" \\gms to "+as_string(tmax)+" \\gms" 
+# w.title = get("TITL")
+
+ toggle/info/on
+ENDPROCEDURE

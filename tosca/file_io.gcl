@@ -1,0 +1,52 @@
+PROCEDURE b2a
+ QUALIFIERS /MODULE
+ PARAMETERS win=workspace file=string
+ LOCAL myfile wtmp
+ LOCAL x y e dummy
+
+ print "\n"
+
+ IF (win=_) 
+  printen "Please give the workspace that you wish to output"
+  RETURN
+ ENDIF
+
+ IF (file=_)
+  file = inquire_string("b2a> filename ? ")
+ ENDIF
+
+  printn "TITLE: " + win.title
+
+
+  wtmp = win
+
+  wtmp.x = centre_bins(win.x)
+ 
+  dummy = ""
+
+
+  printn x
+  printn y
+  printn e
+  
+  IF (MODULE)
+#    module/load "bin2asc.so"
+#    wtmp<~module:execute("bin2asc", wtmp)
+#    module/unload "bin2asc.so"
+  ELSE
+
+  printn "Writing File using ASCIIFILE..."
+
+  myfile=asciifile:open:new(file)  
+  asciifile/writefree myfile _ "" wtmp.title
+  asciifile/writefree myfile _ "" "M  (=MEV)       COUNTS          ERROR"
+  asciifile/writefixed myfile _ "%13.6e\t%13.6e\t%13.6e" wtmp.x wtmp.y wtmp.e 
+
+#  asciifile/writefixed myfile _ "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e" x y e 
+    # 1p3e13.6                                                          
+#  asciifile/writefree myfile _ "  " W.x W.y W.e 
+
+  asciifile/close myfile
+  ENDIF
+
+ENDPROCEDURE

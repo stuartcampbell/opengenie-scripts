@@ -1,0 +1,374 @@
+FORWARD outline_het_psd
+FORWARD outline_het_main
+FORWARD rotate
+FORWARD check_intensities
+FORWARD see_ns
+
+ PROCEDURE see_psd
+
+ PARAMETERS tmin=REAL tmax=REAL min=REAL max=REAL
+
+ LOCAL start in w
+ GLOBAL ntubes nspec tube_width tube_height spec string counts
+ GLOBAL index xborder yborder tmp tmp2 top_colour zmin zmax
+ GLOBAL c_x c_y intensity error ct polygons _sic_wedge yplotoffset
+
+ printn "\n"
+
+ top_colour = 80
+
+ xborder = 0.0305 + 0.2424/2.0
+ yborder = 0.2
+
+ yplotoffset = 0.05
+
+ tube_width =  1.0 - (4*xborder)
+ tube_width = 2*0.318
+ tube_height = 1.0 - (2*yborder)
+
+ ntubes = 26
+ nspec = 64
+ start = 401
+ spec = dimensions(ntubes*nspec)
+ fill spec start 1
+
+ c_y = dimensions(4,nspec*ntubes)
+ c_x = dimensions(4,nspec*ntubes)
+
+#  in = fields()
+
+# counts = get("CNT1")
+# in.counts = counts
+# in.nspec = 2585
+# in.ntc = 1676
+# module/load "og:reorder.so"
+# tmp <~ module:execute("reorder",in)
+# module/unload "og:reorder.so"
+# counts <~ tmp.counts
+# w = counts[671675:3458874]
+# redim w 1664 1675
+ 
+# tmp = s(start)
+# tmp.y = w
+# tmp.e = sqrt(w)
+# tmp <~integrate(tmp, tmin, tmax)
+
+ printn now()
+ tmp = integrate(get(spec),tmin,tmax)
+ printn now()
+
+ intensity  = tmp.sum
+ error = tmp.error
+  
+ zmin = min; zmax = max
+
+# check_intensities intensity 
+# zmin = min(intensity); zmax = max(intensity)
+# zmin = 0; zmax = max(intensity)
+# IF (MIN); zmin = min; ENDIF
+# IF (MAX); zmax = max; ENDIF
+
+ LOOP i FROM 1 TO ntubes
+ LOOP j FROM 1 TO nspec
+
+ index = ((i-1)*nspec)+j
+
+ IF (i > 13)
+  c_x[1,index] = 0.5+xborder+((i-14)*(tube_width/ntubes))
+  c_x[2,index] = 0.5+xborder+((i-13)*(tube_width/ntubes))
+  c_x[3,index] = 0.5+xborder+((i-13)*(tube_width/ntubes))
+  c_x[4,index] = 0.5+xborder+((i-14)*tube_width/ntubes)
+ ELSE
+  c_x[1,index] = 0.5-xborder-((i-1)*(tube_width/ntubes))
+  c_x[2,index] = 0.5-xborder-(i*(tube_width/ntubes))
+  c_x[3,index] = 0.5-xborder-(i*(tube_width/ntubes))
+  c_x[4,index] = 0.5-xborder-((i-1)*tube_width/ntubes)
+ ENDIF
+
+ c_y[1,index] = yborder + ((j-1)*(tube_height/nspec)) + yplotoffset
+ c_y[2,index] = yborder + ((j-1)*(tube_height/nspec)) + yplotoffset
+ c_y[3,index] = yborder + (j*(tube_height/nspec)) + yplotoffset
+ c_y[4,index] = yborder + (j*(tube_height/nspec)) + yplotoffset
+
+ ENDLOOP
+ ENDLOOP
+
+ check_device
+ device/clear
+
+ win_scaled 0. 1. 0. 1. 0. 1. 0. 1.
+
+ ct = colourtable:rainbow(top_colour) 
+
+ polygons=cell_array:draw:polygon(intensity,ct,c_x,c_y, &
+	    valmin=zmin,valmax=zmax)         
+
+ outline_het_psd c_x c_y nspec ntubes
+
+ string = "PSD Run N\\uo\\d "+as_string(get("RUN"))+"  (" + & 
+	as_string(tmin)+" \\gms to "+as_string(tmax)+" \\gms)"
+ text/draw/centre 0.5 (1.0-yborder/2.0) string size=1.0
+
+ see_ns
+
+ win_unscaled  xborder 1.0-xborder 0.05+yplotoffset 0.15+yplotoffset
+ _sic_wedge = cell_wedge:draw:horizontal(object=polygons)
+ axes/draw/noynum
+
+ ENDPROCEDURE
+
+
+ PROCEDURE outline_het_psd
+  PARAMETERS c_x c_y nspec ntubes
+
+  line/draw c_x[1,1] c_y[1,1] c_x[2,(nspec*13)] c_y[1,1]
+  line/draw c_x[1,1] c_y[1,1] c_x[1,1] c_y[4,nspec]
+  line/draw c_x[1,1] c_y[4,nspec] c_x[2,(nspec*13)] c_y[4,nspec]
+  line/draw c_x[2,(nspec*13)] c_y[4,nspec] c_x[2,(nspec*13)] c_y[1,1]   
+
+  line/draw c_x[1,(nspec*14)] c_y[1,1] c_x[2,(nspec*ntubes)] c_y[1,1]
+  line/draw c_x[1,(nspec*14)] c_y[1,1] c_x[1,(nspec*14)] c_y[4,nspec]
+  line/draw c_x[1,(nspec*14)] c_y[4,nspec] c_x[2,(nspec*ntubes)] c_y[4,nspec]
+  line/draw c_x[2,(nspec*ntubes)] c_y[4,nspec] c_x[2,(nspec*ntubes)] c_y[1,1]   
+
+ ENDPROCEDURE
+
+ PROCEDURE see_ns
+ PARAMETERS tmin=REAL tmax=REAL zmin=REAL zmax=REAL
+ 
+ LOCAL start w 
+ GLOBAL ntubes nspec tube_width tube_height spec string counts
+ GLOBAL index xborder yborder tmp tmp2 top_colour zmin zmax
+ GLOBAL c_x c_y intensity error ct polygons _sic_wedge 
+
+ top_colour = 80
+
+ xborder = 0.0305 + 0.2424/2.0
+ yborder = 0.2
+
+ tube_width = 2*0.32
+ tube_height = 0.24375
+
+ ntubes = 20
+ nspec = 26
+ start = 2065
+ spec = dimensions(ntubes*nspec)
+ fill spec start 1
+
+ c_y = dimensions(4,nspec*ntubes)
+ c_x = dimensions(4,nspec*ntubes)
+
+# w = counts[(start*1675):3894374]
+# redim w 260 1675
+# 
+# tmp = s(start)
+# tmp.y = w
+# tmp.e = sqrt(w)
+# tmp <~integrate(get(, tmin, tmax)
+ 
+ printn now()
+ tmp = integrate(get(spec),tmin,tmax)
+ printn now()
+
+ intensity  = tmp.sum
+ error = tmp.error
+
+
+ LOOP i FROM 1 TO ntubes
+ LOOP j FROM 1 TO nspec
+
+ index = ((i-1)*nspec)+j
+
+ IF (i > 10)
+  c_y[1,index] = 0.5+yborder+((i-10)*(tube_height/ntubes))
+  c_y[2,index] = 0.5+yborder+((i-9)*(tube_height/ntubes))
+  c_y[3,index] = 0.5+yborder+((i-9)*(tube_height/ntubes))
+  c_y[4,index] = 0.5+yborder+((i-10)*tube_height/ntubes)
+ ELSE
+  c_y[1,index] = 0.5-yborder-((i-1)*(tube_height/ntubes))
+  c_y[2,index] = 0.5-yborder-(i*(tube_height/ntubes))
+  c_y[3,index] = 0.5-yborder-(i*(tube_height/ntubes))
+  c_y[4,index] = 0.5-yborder-((i-1)*tube_height/ntubes)
+ ENDIF
+
+ c_x[1,index] = xborder + ((j-1)*(tube_width/nspec)) 
+ c_x[2,index] = xborder + ((j-1)*(tube_width/nspec)) 
+ c_x[3,index] = xborder + (j*(tube_width/nspec)) 
+ c_x[4,index] = xborder + (j*(tube_width/nspec)) 
+
+ ENDLOOP
+ ENDLOOP
+
+ win_scaled 0. 1. 0. 1. 0. 1. 0. 1.
+
+ ct = colourtable:rainbow(top_colour) 
+
+ polygons=cell_array:draw:polygon(intensity,ct,c_x,c_y, &         
+	    valmin=zmin,valmax=zmax)         
+
+ outline_het_psd c_x c_y nspec ntubes
+
+ ENDPROCEDURE
+
+ PROCEDURE outline_het_ns
+  PARAMETERS c_x c_y nspec ntubes
+
+  line/draw c_x[1,1] c_y[1,1] c_x[2,(nspec*13)] c_y[1,1]
+  line/draw c_x[1,1] c_y[1,1] c_x[1,1] c_y[4,nspec]
+  line/draw c_x[1,1] c_y[4,nspec] c_x[2,(nspec*13)] c_y[4,nspec]
+  line/draw c_x[2,(nspec*13)] c_y[4,nspec] c_x[2,(nspec*13)] c_y[1,1]   
+
+  line/draw c_x[1,(nspec*14)] c_y[1,1] c_x[2,(nspec*ntubes)] c_y[1,1]
+  line/draw c_x[1,(nspec*14)] c_y[1,1] c_x[1,(nspec*14)] c_y[4,nspec]
+  line/draw c_x[1,(nspec*14)] c_y[4,nspec] c_x[2,(nspec*ntubes)] c_y[4,nspec]
+  line/draw c_x[2,(nspec*ntubes)] c_y[4,nspec] c_x[2,(nspec*ntubes)] c_y[1,1]   
+
+ ENDPROCEDURE
+
+##################################################
+
+ PROCEDURE main_bank
+
+ PARAMETERS tmin=REAL tmax=REAL
+
+ GLOBAL c_x c_y intensity polygons
+ LOCAL i j index ct top_colour xborder yborder
+ LOCAL bank_width tube_height tmp angle start_det
+ LOCAL counts in w tmp2
+
+ printn "\n"
+
+ top_colour = 80
+
+ ntubes = 33
+ c_y = dimensions(4,ntubes)
+ c_x = dimensions(4,ntubes)
+ spec = dimensions(ntubes)
+              
+ xborder = 0.13
+ yborder = 0.2
+ angle = 0.0
+
+ bank_width =  0.3
+ tube_height = 0.07
+
+  check_device
+  device/clear
+  win_scaled 0. 1. 0. 1. 0. 1. 0. 1.
+
+  ct = colourtable:rainbow(top_colour) 
+
+# counts = get("CNT1")
+
+# in = fields()
+# in.counts = counts
+# in.nspec = 2585
+# in.ntc = 1676
+# module/load "og:reorder.so"
+# tmp2 <~ module:execute("reorder",in)
+# module/unload "og:reorder.so"
+
+
+ LOOP k FROM 1 TO 8
+ start_det = 101+((k-1)*32)
+ fill spec start_det 1 
+        
+# w = tmp2.counts[(start_det*1675):(((ntubes+start_det)*1675)-1)]
+# redim w ntubes 1675
+ 
+# tmp = s(start_det)
+# tmp.y = w
+# tmp.e = sqrt(w)
+# tmp <~integrate(tmp, tmin, tmax)
+
+ tmp = integrate(get(spec),tmin,tmax)
+ intensity  = tmp.sum
+ error = tmp.error
+
+ LOOP i FROM 1 TO ntubes
+
+  j = 1
+  index = i
+
+  c_x[1,index] = 0.5-xborder-((i-1)*(bank_width/ntubes))
+  c_x[2,index] = 0.5-xborder-((i-1)*bank_width/ntubes)
+  c_x[3,index] = 0.5-xborder-(i*(bank_width/ntubes))
+  c_x[4,index] = 0.5-xborder-(i*(bank_width/ntubes))
+
+  c_y[1,index] = 0.5 + tube_height/2.0
+  c_y[2,index] = 0.5 - tube_height/2.0
+  c_y[3,index] = 0.5 - tube_height/2.0
+  c_y[4,index] = 0.5 + tube_height/2.0
+
+  ENDLOOP
+
+  tmp = rotate(c_x, c_y, angle)
+  c_x = tmp.x
+  c_y = tmp.y
+  angle = angle - 45.0
+  
+  polygons=cell_array:draw:polygon(intensity,ct,c_x,c_y)
+#  outline_het_main c_x c_y ntubes
+  outline_het_main/full c_x c_y ntubes
+  printn "start_det = "start_det
+  ENDLOOP
+
+ ENDPROCEDURE
+
+ PROCEDURE rotate
+ PARAMETERS x y angle=REAL
+ RESULT res
+ LOCAL xnew ynew rad 
+ rad = 0.01745329251
+ x = x - 0.5
+ y = y - 0.5 
+ xnew = x*cos(angle*rad) + y*sin(angle*rad)
+ ynew = -x*sin(angle*rad) + y*cos(angle*rad)
+ x = xnew + 0.5
+ y = ynew + 0.5 
+ res=fields()
+ res.x = x
+ res.y =y 
+ ENDPROCEDURE
+
+ PROCEDURE outline_het_main
+ QUALIFIERS /FULL
+ PARAMETERS c_x c_y ntubes
+
+ IF (FULL)
+ LOOP i FROM 1 TO ntubes
+  line/draw c_x[1,i] c_y[1,i] c_x[4,i] c_y[4,i] line_thickness = 2.0
+  line/draw c_x[1,i] c_y[1,i] c_x[2,i] c_y[2,i] line_thickness = 2.0
+  line/draw c_x[2,i] c_y[2,i] c_x[3,i] c_y[3,i] line_thickness = 2.0
+  line/draw c_x[4,i] c_y[4,i] c_x[3,i] c_y[3,i]	line_thickness = 2.0
+ ENDLOOP
+ RETURN
+ ENDIF
+
+  line/draw c_x[1,1] c_y[1,1] c_x[4,ntubes] c_y[4,ntubes] line_thickness = 2.0
+  line/draw c_x[1,1] c_y[1,1] c_x[2,1] c_y[2,1] line_thickness = 2.0
+  line/draw c_x[2,1] c_y[2,1] c_x[3,ntubes] c_y[3,ntubes] line_thickness = 2.0
+  line/draw c_x[4,ntubes] c_y[4,ntubes] c_x[3,ntubes] c_y[3,ntubes] &
+	line_thickness = 2.0
+
+ ENDPROCEDURE
+
+# PROCEDURE check_intensities
+# PARAMETERS w 
+# RESULT out
+# GLOBAL zmin zmax
+#
+# out= fields()
+
+# LOOP i FROM 2 TO (length(w)-1)
+#  IF (ABS(w[i]-w[(i+1)]) > (average(w)*10000.0))
+#   w[i] = 0.0
+#  ENDIF
+# ENDLOOP
+
+# out = w
+
+# zmin = min(w)
+# zmax = max(w)
+
+# ENDPROCEDURE

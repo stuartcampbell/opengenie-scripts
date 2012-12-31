@@ -1,0 +1,17 @@
+PROCEDURE smoogen
+ PARAMETERS data=WORKSPACE
+ RESULT res
+
+ LOCAL order perc tmp
+
+ tmp=fields()
+
+ tmp.perc = inquire("Percentage of smoothing ")
+ tmp.order = inquire("Enter order of smoothing polynomial(0, 2, 4) ")
+                               
+ tmp <~ module:execute("SMOOGEN", tmp)
+                               
+ res = data
+ res.y = tmp.y
+
+ENDPROCEDURE

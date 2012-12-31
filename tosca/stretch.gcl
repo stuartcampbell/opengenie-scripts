@@ -1,0 +1,17 @@
+# Stuart Campbell July 1999
+PROCEDURE stretch
+PARAMETERS w factor=REAL
+RESULT res
+LOCAL work
+
+ work = w
+ work.x = work.x * factor
+ printin " Applying a scaling factor of "&as_string(factor)
+
+ IF called_as_function()
+  res = work
+ ELSE
+  w = work
+ ENDIF
+  
+ENDPROCEDURE

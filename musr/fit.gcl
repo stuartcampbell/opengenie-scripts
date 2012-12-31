@@ -1,0 +1,561 @@
+# A number of small routines that try to make the peakfit and
+# peakgen commands alittle more friendly.
+# Stuart Campbell (Oct 1998)
+######################################################
+
+ PROCEDURE GAUSS
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit lower upper type underline ymin ymax &
+       input_pars input_ipropt
+ GLOBAL tmp
+  
+ IF NOT defined(min)
+  min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+  max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin ""
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+# input_pars = dimensions(5)
+# input_ipropt = dimensions(5)
+# fill input_pars 0.0
+# input_ipropt[2] = 1
+                    
+ tmp=peakfit:gauss(x, y, e, pars=input_pars, ipropt=input_ipropt)
+ yfit = peakgen:gauss(centre_bins(w.x), tmp.pars)
+
+ printin "==============================" 
+ printin ""
+ printin "Background constant : "tmp.pars[2]" +- "tmp.sigpar[2]
+ printin "           slope    : "tmp.pars[1]" +- "tmp.sigpar[1]
+ printin ""
+ printin "Amplitude : "tmp.pars[3]" +- "tmp.sigpar[3]
+ printin "Centre    : "tmp.pars[4]" +- "tmp.sigpar[4]
+ printin "Sigma     : "tmp.pars[5]" +- "tmp.sigpar[5]
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="Gaussian fit to "+w.title
+
+ wout.slope = tmp.pars[1]
+ wout.background = tmp.pars[2]
+ wout.A = tmp.pars[3]
+ wout.centre = tmp.pars[4]
+ wout.sigma = tmp.pars[5]
+
+ wout.slope_sig = tmp.sigpar[1]
+ wout.background_sig = tmp.sigpar[2]
+ wout.A_sig = tmp.sigpar[3]
+ wout.centre_sig = tmp.sigpar[4]
+ wout.sigma_sig = tmp.sigpar[5]
+ 
+
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+
+ ENDPROCEDURE
+
+######################################################
+
+ PROCEDURE GEXP
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit lower upper type underline ymin ymax
+ GLOBAL tmp
+  
+ IF NOT defined(min)
+  min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+  max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin ""
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+ tmp=peakfit:gexp(x, y, e)
+ yfit = peakgen:gexp(centre_bins(w.x), tmp.pars)
+
+ printin "============================================" 
+ printin ""
+ printin "Background constant : "tmp.pars[2]" +- "tmp.sigpar[2]
+ printin "           slope    : "tmp.pars[1]" +- "tmp.sigpar[1]
+ printin ""
+ printin "Amplitude : "tmp.pars[3]" +- "tmp.sigpar[3]
+ printin "Centre    : "tmp.pars[4]" +- "tmp.sigpar[4]
+ printin "Sigma     : "tmp.pars[5]" +- "tmp.sigpar[5]
+ printin "Tau       : "tmp.pars[6]" +- "tmp.sigpar[6] 
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="GEXP fit to "+w.title
+
+ wout.slope = tmp.pars[1]
+ wout.background = tmp.pars[2]
+ wout.A = tmp.pars[3]
+ wout.centre = tmp.pars[4]
+ wout.sigma = tmp.pars[5]
+ wout.tau = tmp.pars[6]
+
+ wout.slope_sig = tmp.sigpar[1]
+ wout.background_sig = tmp.sigpar[2]
+ wout.A_sig = tmp.sigpar[3]
+ wout.centre_sig = tmp.sigpar[4]
+ wout.sigma_sig = tmp.sigpar[5]
+ wout.tau_sig = tmp.sigpar[6]
+
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+ 
+ ENDPROCEDURE
+
+######################################################
+
+ PROCEDURE loren
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit lower upper type underline ymin ymax
+ GLOBAL tmp
+  
+ IF NOT defined(min)
+  min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+  max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin ""
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+ tmp=peakfit:loren(x, y, e)
+ yfit = peakgen:loren(centre_bins(w.x), tmp.pars)
+
+ printin "================================" 
+ printin ""
+ printin "Background constant : "tmp.pars[2]" +- "tmp.sigpar[2]
+ printin "           slope    : "tmp.pars[1]" +- "tmp.sigpar[1]
+ printin ""
+ printin "Amplitude : "tmp.pars[3]" +- "tmp.sigpar[3]
+ printin "Centre    : "tmp.pars[4]" +- "tmp.sigpar[4]
+ printin "Gamma     : "tmp.pars[5]" +- "tmp.sigpar[5]
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="Lorentzian fit to "+w.title
+
+ wout.slope = tmp.pars[1]
+ wout.background = tmp.pars[2]
+ wout.A = tmp.pars[3]
+ wout.centre = tmp.pars[4]
+ wout.gamma = tmp.pars[5]
+
+
+ wout.slope_sig = tmp.sigpar[1]
+ wout.background_sig = tmp.sigpar[2]
+ wout.A_sig = tmp.sigpar[3]
+ wout.centre_sig = tmp.sigpar[4]
+ wout.gamma_sig = tmp.sigpar[5]
+
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+ 
+ ENDPROCEDURE
+
+######################################################
+
+ PROCEDURE LEXP
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit lower upper type underline ymin ymax
+ GLOBAL tmp
+  
+ IF NOT defined(min)
+  min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+  max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin ""
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+ tmp=peakfit:lexp(x, y, e)
+ yfit = peakgen:lexp(centre_bins(w.x), tmp.pars)
+
+ printin "==============================================" 
+ printin ""
+ printin "Background constant : "tmp.pars[2]" +- "tmp.sigpar[2]
+ printin "           slope    : "tmp.pars[1]" +- "tmp.sigpar[1]
+ printin ""
+ printin "Amplitude : "tmp.pars[3]" +- "tmp.sigpar[3]
+ printin "Centre    : "tmp.pars[4]" +- "tmp.sigpar[4]
+ printin "Gamma     : "tmp.pars[5]" +- "tmp.sigpar[5]
+ printin "Tau       : "tmp.pars[6]" +- "tmp.sigpar[6]
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="LEXP fit to "+w.title
+
+ wout.slope = tmp.pars[1]
+ wout.background = tmp.pars[2]
+ wout.A = tmp.pars[3]
+ wout.centre = tmp.pars[4]
+ wout.gamma = tmp.pars[5]
+ wout.tau = tmp.pars[6]
+ 
+ wout.slope_sig = tmp.sigpar[1]
+ wout.background_sig = tmp.sigpar[2]
+ wout.A_sig = tmp.sigpar[3]
+ wout.centre_sig = tmp.sigpar[4]
+ wout.gamma_sig = tmp.sigpar[5]
+ wout.tau_sig = tmp.sigpar[6]
+
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+
+ ENDPROCEDURE
+
+######################################################
+
+ PROCEDURE VOIGT
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit lower upper type underline ymin ymax
+ GLOBAL tmp
+  
+ IF NOT defined(min)
+  min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+  max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin ""
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+ tmp=peakfit:voigt(x, y, e)
+ yfit = peakgen:voigt(centre_bins(w.x), tmp.pars)
+
+ printin "===========================" 
+ printin ""
+ printin "Background constant : "tmp.pars[2]" +- "tmp.sigpar[2]
+ printin "           slope    : "tmp.pars[1]" +- "tmp.sigpar[1]
+ printin ""
+ printin "Amplitude : "tmp.pars[3]" +- "tmp.sigpar[3]
+ printin "Centre    : "tmp.pars[4]" +- "tmp.sigpar[4]
+ printin "Sigma     : "tmp.pars[5]" +- "tmp.sigpar[5]
+ printin "Gamma     : "tmp.pars[6]" +- "tmp.sigpar[6]
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="Voigt fit to "+w.title
+
+ wout.slope = tmp.pars[1]
+ wout.background = tmp.pars[2]
+ wout.A = tmp.pars[3]
+ wout.centre = tmp.pars[4]
+ wout.sigma = tmp.pars[5]
+ wout.gamma = tmp.pars[6]
+ 
+ wout.slope_sig = tmp.sigpar[1]
+ wout.background_sig = tmp.sigpar[2]
+ wout.A_sig = tmp.sigpar[3]
+ wout.centre_sig = tmp.sigpar[4]
+ wout.sigma_sig = tmp.sigpar[5]
+ wout.gamma_sig = tmp.sigpar[6]
+
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+
+ ENDPROCEDURE
+
+######################################################
+
+ PROCEDURE VEXP
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit lower upper type underline ymin ymax
+ GLOBAL tmp
+  
+ IF NOT defined(min)
+  min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+  max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin "\n"
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+ tmp=peakfit:vexp(x, y, e)
+ yfit = peakgen:vexp(centre_bins(w.x), tmp.pars)
+
+ printin "=========================================" 
+ printin ""
+ printin "Background constant : "tmp.pars[2]" +- "tmp.sigpar[2]
+ printin "           slope    : "tmp.pars[1]" +- "tmp.sigpar[1]
+ printin ""
+ printin "Amplitude : "tmp.pars[3]" +- "tmp.sigpar[3]
+ printin "Centre    : "tmp.pars[4]" +- "tmp.sigpar[4]
+ printin "Sigma     : "tmp.pars[5]" +- "tmp.sigpar[5]
+ printin "Gamma     : "tmp.pars[6]" +- "tmp.sigpar[6]
+ printin "Tau       : "tmp.pars[7]" +- "tmp.sigpar[7]
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="VEXP fit to "+w.title
+
+ wout.slope = tmp.pars[1]
+ wout.background = tmp.pars[2]
+ wout.A = tmp.pars[3]
+ wout.centre = tmp.pars[4]
+ wout.sigma = tmp.pars[5]
+ wout.gamma = tmp.pars[6]
+ wout.tau = tmp.pars[7]
+ 
+ wout.slope_sig = tmp.sigpar[1]
+ wout.background_sig = tmp.sigpar[2]
+ wout.A_sig = tmp.sigpar[3]
+ wout.centre_sig = tmp.sigpar[4]
+ wout.sigma_sig = tmp.sigpar[5]
+ wout.gamma_sig = tmp.sigpar[6]
+ wout.tau_sig = tmp.pars[7]
+
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+
+ ENDPROCEDURE
+
+######################################################
+
+ PROCEDURE POLY
+ QUALIFIERS /PLOT
+ PARAMETERS W=WORKSPACE TERMS=INTEGER MIN=REAL MAX=REAL
+ RESULT WOUT
+
+ LOCAL x y e yfit string lower upper type underline ymin ymax pars
+ GLOBAL tmp
+  
+ IF NOT defined(terms)
+  LOOP
+   terms=inquire("Order of polynomial?")
+   EXITIF is_a(terms,"real") OR is_a(terms,"integer")
+  ENDLOOP
+  IF IS_A(terms, "real")
+   terms = as_integer(terms)
+  ENDIF
+ ENDIF
+
+ IF NOT defined(min)
+   min = min(w.x)
+ ENDIF
+ IF NOT defined(max)
+   max = max(w.x)
+ ENDIF
+ 
+ lower = bracket(w.x, min)
+ upper = bracket(w.x, max) 
+ 
+ printin ""
+ printin ""
+
+ x = w.x[(lower):(upper)]
+ x = centre_bins(x)
+ y = w.y[(lower):(upper-1)]
+ e = w.e[(lower):(upper-1)]
+
+ pars = dimensions(terms)
+ fill pars 0.0 
+
+ tmp=peakfit:poly(x, y, e, pars)
+ yfit = peakgen:poly(centre_bins(w.x), tmp.pars)
+
+ printin "================================" 
+ printin ""
+# printin " F(x)=P1+P2(x)+P3(x^2)+P4(x^6)"
+ string = "F(x) = P1"
+ LOOP i FROM 1 TO terms
+  IF (i>=2)
+   string = string&"+P"+as_string(i)+"(x^"+as_string(i-1)+")"
+  ENDIF
+  printin "P"i"       : "tmp.pars[i]" +- "tmp.sigpar[i]
+ ENDLOOP
+ printin ""
+ printin string
+ printin ""
+ printn " IGOOD = "tmp.igood
+ printn ""
+
+ wout = fields()
+ wout = w
+ wout.y = yfit
+ fill wout.e 0.0
+ wout.title="Polynomial fit to "+w.title
+
+ wout.pars = tmp.pars
+ wout.sigpar = tmp.sigpar
+ 
+ IF (PLOT)
+  ymin = 0.0
+  ymax = max(w.y[(lower):(upper)])
+  ymax = ymax + (ymax/10.0)
+  
+      display/errors w min max ymin ymax linecolour=$blue
+	plot/markers w 
+	alter/plotcolour $red
+	plot/line wout
+	alter/plotcolour $white
+ ENDIF
+
+ ENDPROCEDURE
+
+######################################################
+

@@ -1,0 +1,65 @@
+PROCEDURE convertall
+ PARAMETERS beg=INTEGER end=INTEGER
+
+ LOCAL i w1
+ LOCAL outfile outDisk outDir outExt outPrefix
+ LOCAL infile inDisk inDir inExt inPrefix
+
+ toggle/info/off
+
+ IF (beg=_)
+  beg = inquire_integer("Please give first run to convert")
+ ENDIF
+
+ IF (end=_)
+  end = beg
+ ENDIF
+
+ set/instrument "TSC"
+ set/extension  "RAW"
+ set/directory  ""
+ IF os() = "VMS"
+    set/disk       "TOSCA_DATA:"
+ ENDIF
+
+ IF OS() = "WINNT"
+  set/disk "//NDAVMS/TOSCA"
+ ELSE
+  set/disk "\"
+ ENDIF
+
+ inDisk = "TOSCA$DISK0:"
+ inDir = "[TOSCA.USER]"
+ inPrefix = "TRSL"
+ inExt = "ANA"
+
+ outDisk = "SCRATCH$DISK:"
+ outDir = "[TOSCA.USER]"
+ outPrefix = "TRSL"
+ outExt = "XYE" 
+
+ IF os() = "WINNT"
+  inDisk = ""
+  inDir  = ""
+  outDisk = ""
+  outDir  = ""
+ ENDIF
+
+ LOOP i FROM beg TO end
+
+   infile = inDisk+inDir+inPrefix+as_string(i)+"."+inExt
+   outfile = outDisk+outDir+outPrefix+as_string(i)+"."+outExt
+
+   w1 = get(1,infile)
+    
+   title = get("TITL",cfn(i))
+
+   IF NOT (W1=_)
+     b2a w1 outfile
+   ENDIF
+
+ ENDLOOP
+  
+ toggle/info/on
+
+ENDPROCEDURE

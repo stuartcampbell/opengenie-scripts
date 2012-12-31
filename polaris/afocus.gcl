@@ -1,0 +1,64 @@
+ PROCEDURE afocus
+
+# OpenGENIE routine to focus POLARIS low angle detectors (s63>s142).
+# Smoothed background spectrum (#20248) subtracted from summed sample data.
+# Spectrum normalized by smoothed & corrected Vanadium spectrum (#20245)
+#
+# Detectors A8 and A50 are "dead" and are excluded from summation.
+# s63 giving strange effects and excluded from summation
+# s82 a bit noisy and excluded from summation 
+#
+# converted by Stuart Campbell (8/7/98)
+#
+
+  RESULT res
+  LOCAL nrun n tmp par_file pars bckgrd vanadium monitor area
+
+  nrun = inquire("Enter run number")
+
+  assign nrun
+
+  par_file = asciifile:open("adetect.dat",comment="#")
+  asciifile/readfree par_file "NSPEC,L1,L2,TWOTHETA,EMODE,EFIXED" &
+   count=-1
+  pars = asciifile:data(par_file)
+  asciifile/close par_file
+              
+  n = length(pars.nspec)
+  printn n
+  printn pars
+
+  res=focus:d(pars.nspec,specpars=pars)
+                       
+# Normalise to incident beam monitor
+ 
+  monitor=s(1)
+  area=integrate(monitor,2000.0,2200.0)
+  res = res / area.sum
+
+  res.twotheta = 35.0
+  res.l1 = 12.0
+  res.l2 = 2.20
+  units/t res
+
+  rebin res 200.0 17880.0
+
+  res.y = res.y * (252.82*2.0*(sum(pars.l1))/n)
+  res.e = res.e * (252.82*2.0*(sum(pars.l1))/n)
+  
+# Subtract instrumental background
+  
+  bckgrd = get(1,"pol_calib_empty:aback.dat")
+  bckgrd=rebin(bckgrd,res.x)
+  res = res - bckgrd
+
+# Normalise to vanadium spectrum
+ 
+  vanadium = get(1,"pol_calib_van:avan.dat")
+  vanadium = rebin(vanadium,res.x)
+  res = res / vanadium
+
+  rebin res 200.0 17880.0
+
+ ENDPROCEDURE
+

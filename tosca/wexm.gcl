@@ -1,0 +1,24 @@
+#
+# Stuart Campbell (ISIS)
+# July 1999
+#
+PROCEDURE wexm
+ PARAMETERS work 
+ RESULT res
+ LOCAL unt=353.4e-5 zz=0.013
+
+ unt = 353.4e-5
+ zz = 0.013
+
+  IF called_as_function()
+   res = work
+   res.y = res.y / (unt*(1-EXP(-8.3*zz*centre_bins(res.x))))
+   res.e = res.e / (unt*(1-EXP(-8.3*zz*centre_bins(res.x))))
+#   res.y = res.y / (unt*(1-EXP(-8.3*zz*res.x[1:(res.ntc)])))
+#   res.e = res.e / (unt*(1-EXP(-8.3*zz*res.x[1:(res.ntc)])))
+  ELSE
+   work.y = work.y / (unt*(1-EXP(-8.3*zz*centre_bins(work.x))))
+   work.e = work.e / (unt*(1-EXP(-8.3*zz*centre_bins(work.x))))
+  ENDIF
+
+ENDPROCEDURE

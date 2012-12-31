@@ -1,0 +1,206 @@
+# A procedure to plot a number of spectra together that are
+# contained in the workspace array 'w' as produced by the 
+# standard routines. (e.g. read_cur,iliad)
+#
+# Stuart Campbell - ISIS/RAL (12/10/98)
+# Last modified on 13th Oct 1998 by SIC
+#
+ PROCEDURE look
+ QUALIFIERS /Q /E /M
+ PARAMETERS w=WORKSPACEARRAY start=INTEGER end=INTEGER  &
+            xmin=REAL xmax=REAL ymin=REAL ymax=REAL
+ 
+ LOCAL i j number xnumber xdim ydim xstart xend ystart yend xborder &
+       yborder gap tmp xmin xmax ymin ymax xmin2 xmax2 ymin2 ymax2 &
+       select maximum xpos ypos wx wy
+ GLOBAL manypic
+
+  device/clear
+
+ maximum = length(w)
+
+   xmin2 = xmin
+   xmax2 = xmax
+   ymin2 = ymin
+   ymax2 = ymax
+
+ IF NOT DEFINED(start)
+  start = 1
+ ENDIF
+ IF NOT DEFINED(end)
+  end = maximum
+ ENDIF
+
+ IF (start > maximum) OR (end > maximum)
+  printen "LOOK - Invalid workspace range"
+  RETURN
+ ENDIF
+
+ number = abs(end - start) + 1
+ printin "Number of plots = " number
+
+ wx = dimensions(2,maximum)
+ wy = dimensions(2,maximum)
+
+ xborder = 0.05
+ yborder = 0.05
+ gap = 0.05
+ xpos = 0.5
+ ypos = 0.5
+ 
+ xstart = xborder
+ ystart = yborder
+
+ IF (number > 2)
+     number = number + 1
+ ENDIF 
+ 
+ manypic = picture()
+              
+ LOOP i FROM start TO end
+                         
+     xnumber = 1.0*(number/(as_integer(number/2.0)))
+     xdim = (1.0-(2*xborder)-((xnumber-1)*gap)) / xnumber
+     tmp =  as_integer(number/2.0)-1.0
+     ydim = ((1.0-(2*yborder)-(tmp*gap)) / as_integer(number/2.0))*1.0
+     xend = xstart + xdim  
+     yend = ystart + ydim
+
+   IF (number =1)
+     xstart = xborder
+     xend = 1.0 - xborder
+     ystart = yborder
+     yend = 1.0 - yborder
+   ENDIF
+
+  IF NOT DEFINED(xmin)
+   xmin2 = min(w[i].x) 
+  ENDIF
+  IF NOT DEFINED(xmax)
+   xmax2 = max(w[i].x) 
+  ENDIF
+  IF NOT DEFINED(ymin)
+   ymin2 = min(w[i].y) 
+  ENDIF
+  IF NOT DEFINED(ymax)
+   ymax2 = max(w[i].y)
+  ENDIF
+
+  wx[1,i] = xstart - gap/2.0
+  wx[2,i] = xend   + gap/2.0
+  wy[1,i] = ystart - gap/2.0
+  wy[2,i] = yend   + gap/2.0
+
+  WIN_SCALED xstart xend ystart yend xmin2 xmax2 ymin2 ymax2
+  axes/draw size=(1.6-(number/10.0)) #colour=colour:rgb(0.01,0.01,0.01)
+
+#  IF (length(w[i].x) = length(w[i].y))
+#    markers/draw w[i].x w[i].y colour=$blue
+#  ELSE
+    histogram/draw w[i].x w[i].y colour=$blue
+#  ENDIF
+
+#  IF (E)
+#    errors/draw/vertical w[i].x w[i].y w[i].e colour=$red
+#  ENDIF
+
+  text/draw (xmin2+(xmax2-xmin2)/15.0) ymax2-((ymax2-ymin2)/5.0) &
+	      text=as_string(i) colour=$red
+
+  IF(xend >= (1.0-xborder))
+   xstart = xborder
+   ystart = yend + gap
+  ELSE
+   xstart = xend + gap
+  ENDIF
+ ENDLOOP
+                                           
+  win_unscaled 0. 1. 0. 1.
+  text/draw/centre 0.5 0.975 text=w[start].title size=1.0 
+  text/draw/centre 0.1 0.975 text="Run N\\uo\\d :"+as_string(w[start].run_no) &
+   size=1.0 
+  text/draw/centre 0.01 0.5 text=w[start].ylabel  & 
+  angle=90.0 size=1.0 
+  text/draw/centre 0.5 0.002 text=w[start].xlabel size=1.0
+
+ IF (Q)
+  RETURN
+ ENDIF
+
+
+ LOOP i FROM 1 TO 10000000            # infinite loop - well nearly !!
+
+  win_unscaled 0. 1. 0. 1.
+  printin "Either press X or right click to exit"
+
+  tmp = getcursor(xpos,ypos)
+
+  xpos = tmp.d_x
+  ypos = tmp.d_y
+
+  IF (tmp.char = "x") OR (tmp.char = "X")
+   RETURN
+  ENDIF
+   
+  select = -1
+
+  LOOP j FROM 1 TO maximum
+   IF (tmp.d_x > wx[1,j]) AND (tmp.d_x < wx[2,j]) AND &
+      (tmp.d_y > wy[1,j]) AND (tmp.d_y < wy[2,j]) 
+   select = j
+   ENDIF
+  ENDLOOP
+
+  IF (select = -1)
+   printen "Why did you click on a blank space ?"
+   RETURN
+  ENDIF
+
+   printin "Plotting spectrum number " select
+
+  IF NOT DEFINED(xmin)
+   xmin2 = min(w[select].x) 
+  ELSE 
+   xmin2 = xmin
+  ENDIF
+  IF NOT DEFINED(xmax)
+   xmax2 = max(w[select].x) 
+  ELSE 
+   xmax2 = xmax
+  ENDIF
+  IF NOT DEFINED(ymin)
+   ymin2 = min(w[select].y) 
+  ELSE 
+   ymin2 = ymin
+  ENDIF
+  IF NOT DEFINED(ymax)
+   ymax2 = max(w[select].y)
+  ELSE 
+   ymax2 = ymax
+  ENDIF
+
+  display w[select] xmin2 xmax2 ymin2 ymax2 linecolour=$blue
+
+  IF (E)
+   errors/draw/vertical w[select].x w[select].y w[select].e colour=$red
+  ENDIF
+
+  printin "Left Click or any key to return " 
+
+#  win_unscaled 0. 1. 0. 1.
+  tmp = getcursor(xpos,ypos)
+
+  xpos = tmp.d_x
+  ypos = tmp.d_y
+
+  IF (tmp.char = "x") OR (tmp.char = "X")
+   RETURN
+  ENDIF
+  device/clear
+  redraw manypic
+#  win_unscaled 0. 1. 0. 1.
+ ENDLOOP
+                             
+ ENDPROCEDURE
+                           
+

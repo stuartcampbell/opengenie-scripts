@@ -1,0 +1,56 @@
+PROCEDURE fwhm
+PARAMETERS w=WORKSPACE min=REAL max=REAL
+RESULT res
+LOCAL x y e lower upper maxval value xmin xmax
+LOCAL xtmp ytmp
+
+  printn "\n"
+
+  lower = bracket(w.x, min)
+  upper = bracket(w.x, max)
+
+  x = w.x[(lower):(upper)]
+  y = w.y[(lower):(upper-1)]
+  e = w.e[(lower):(upper-1)]
+  maxval = max(y)
+  value = maxval/2.0
+ 
+  printin "Maximum value : "maxval
+  printin "half height value : "value
+
+  xmin = -1.0
+  xmax = -1.0  
+
+  LOOP i FROM 1 TO (length(y)-1) 
+    IF (y[i] < value) AND (y[i+1] > value) AND (xmin = -1.0) 
+	printn y[i] " " y[i+1]
+	xmin = (x[i]+x[i+1])/2.0
+	printn "xmin = "xmin
+    ENDIF
+    IF (y[i] > value) AND (y[i+1] < value) AND (xmax = -1.0)  
+	printn y[i] " " y[i+1]
+       xmax = (x[i]+x[i+1])/2.0
+	 printn "xmax = "xmax
+    ENDIF
+  ENDLOOP
+
+  xtmp = dimensions(3)
+  ytmp = dimensions(3)
+
+  IF DEVICE:STATUS()
+  fill xtmp xmin
+  fill ytmp 0.0 max(y)/2.0
+  graph/draw xtmp ytmp
+  fill xtmp xmax
+  fill ytmp 0.0 max(y)/2.0
+  graph/draw xtmp ytmp
+  ENDIF
+
+  printin "FWHM = "xmax-xmin
+
+  IF called_as_function()
+   res = xmax-xmin
+  ENDIF
+
+ENDPROCEDURE
+

@@ -1,0 +1,55 @@
+# Crap routine to read in a Muon Nexus file into a 
+# workspace array
+# Stuart Campbell & Aidy (April 2002)
+#
+PROCEDURE ReadMuNXS
+ PARAMETERS p1 file=STRING 
+
+ RESULT res
+ LOCAL tmp i nspec spec1 spec2
+
+ %( gXspec1 _ gXp1 start )%
+ %( gXspec2 _ gXp1 stop )%
+
+ IF (file=_)
+  file = "d:\\data\\30000.nxs"
+ ENDIF
+ IF (spec1=_)
+  spec1=inquire_integer("First Spectra:")
+ ENDIF
+ IF (spec2=_)
+  spec2=inquire_integer("Last Spectra:")
+ ENDIF
+
+ nspec = spec2-spec1+1
+
+ printn "Reading spectra from " spec1 " to " spec2 "."
+ tmp = get(1,file)
+
+# nspec = tmp.histogram_data_1.counts_attr.number
+
+# Get the number of spectra
+ res = dimensions(nspec)
+
+# Fill the array with blank workspaces
+ fill res fields()
+
+ toggle/info/off
+
+ LOOP i FROM spec1 TO spec2
+
+  res[(i)].title =  tmp.title
+  res[(i)].xlabel = tmp.histogram_data_1.corrected_time_attr.units
+  res[(i)].ylabel = tmp.histogram_data_1.counts_attr.units
+  res[(i)].run_no = tmp.number
+  
+  
+  res[(i)].x = uncentre_bins(tmp.histogram_data_1.corrected_time)
+  res[(i)].y = tmp.histogram_data_1.counts[(i),1:1000]*1.0
+  redim res[(i)].y 1000
+ ENDLOOP
+  
+
+ toggle/info/on 
+
+ENDPROCEDURE

@@ -1,0 +1,23 @@
+PROCEDURE lpr
+LOCAL n cmd
+
+ printn "\27#3 R3 Computer Support - 0"
+ printn "\27#4 R3 Computer Support - 0"
+ printn "\27#3 R3 Coffee Room      - 1"
+ printn "\27#4 R3 Coffee Room      - 1"
+ printn "\27#3 DAC                 - 2"
+ printn "\27#4 DAC                 - 2"
+ printn "\27#3 HET Cabin           -11"
+ printn "\27#4 HET Cabin           -11"
+ printn "\27#3 R3 UG5              -14"
+ printn "\27#4 R3 UG5              -14"
+ printn "\27#3 TOSCA Cabin         -17"
+ printn "\27#4 TOSCA Cabin         -17"
+
+ n = inquire_integer("Which printer do you wish to send your plot to?")
+
+ hardcopy "sys$scratch:genie.ps"
+ cmd = " plaser"+as_string(n)+"  sys$scratch:genie.ps"
+ system cmd 
+
+ENDPROCEDURE

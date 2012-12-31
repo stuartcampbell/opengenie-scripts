@@ -1,0 +1,173 @@
+# A version of QREHACK that actually runs quickly !!!
+# (Stuart Campbell) 
+#
+# Modified (14/11/00) to produce separate output for 
+# 	forwards and backwards banks.
+ PROCEDURE qrehack_fb
+ PARAMETERS parfile=STRING
+# RESULT res
+ GLOBAL home_dir
+
+ GLOBAL w1 w2 w3 w4 w5 w6 w7 w8 e1 e2 k1 k2
+
+ GLOBAL ibin ebin emin emax bins
+
+ LOCAL a
+
+ LOCAL total_spec_front total_spec_back
+ LOCAL tmp_front tmp_back res_front res_back pars_front pars_back
+
+ LOCAL par_file_front av_l1_front av_l2_front av_tt_front av_ef_front
+ LOCAL par_file_back av_l1_back av_l2_back av_tt_back av_ef_back
+
+ toscadae
+
+ toggle/info/off
+
+ ibin = 1
+ ebin = 0.005
+ emin = 3.
+ emax = 500.
+
+# setup normalisation
+
+ w1 = s(8)
+ w2 = s(141)
+
+ setpar w2 15.794 0.000 90.0 0 0.0
+ units/lam w2
+ w2 = wexm(w2)
+
+ setpar w1 17.000 0.625 90.0 2 3.347
+ units/la1 w1
+ w2 = rebin(w2, w1.x)
+ w2.xunits = w1.xunits
+ w4=w1/w2
+ units/w w4
+ w4 = rebin:log(w4, emin, ebin, emax)
+ clear w4
+
+# Forward Bank
+
+ par_file_front = asciifile:open(home_dir+"tosca_forward.par", &
+ comment="!")
+ asciifile/readfree par_file_front "NSPEC,L1,L2,TWOTHETA,EMODE,EFIXED" &
+ count=-1
+ pars_front = asciifile:data(par_file_front)
+ asciifile/close par_file_front
+
+# Backward Bank
+
+ par_file_back = asciifile:open(home_dir+"tosca_backward.par", &
+ comment="!")
+ asciifile/readfree par_file_back "NSPEC,L1,L2,TWOTHETA,EMODE,EFIXED" &
+ count=-1
+ pars_back = asciifile:data(par_file_back)
+ asciifile/close par_file_back
+
+# Now focus both banks
+
+ tmp_front = focus:w(pars_front.nspec,specpars=pars_front)
+ tmp_back = focus:w(pars_back.nspec,specpars=pars_back)
+ 
+ rebin/log tmp_front bound1=emin step1=ebin bound2=emax
+ rebin/log tmp_back bound1=emin step1=ebin bound2=emax
+ 
+ res_front = tmp_front
+ res_back = tmp_back
+
+ total_spec_front = length(pars_front.nspec)
+ total_spec_back = length(pars_back.nspec)
+ 
+ av_l1_front=(sum(pars_front.l1)/total_spec_front)
+ av_l2_front=(sum(pars_front.l2)/total_spec_front)
+ av_tt_front=(sum(pars_front.twotheta)/total_spec_front)
+ av_ef_front=(sum(pars_front.efixed)/total_spec_front)
+
+ av_l1_back=(sum(pars_back.l1)/total_spec_back)
+ av_l2_back=(sum(pars_back.l2)/total_spec_back)
+ av_tt_back=(sum(pars_back.twotheta)/total_spec_back)
+ av_ef_back=(sum(pars_back.efixed)/total_spec_back)
+
+ SETPAR tmp_front L1=av_l1_front L2=av_l2_front TT=av_tt_front EM=2 EF=av_ef_front
+ SETPAR tmp_back L1=av_l1_back L2=av_l2_back TT=av_tt_back EM=2 EF=av_ef_back
+# setpar tmp 17.000 0.6255 90.0 2 3.3474
+
+ units/la1 tmp_front
+ units/la1 tmp_back
+
+ res_front = rebin(tmp_front, w2.x)
+ res_back = rebin(tmp_back, w2.x)
+ 
+ tmp_front = w2 * total_spec_front
+ tmp_back = w2 * total_spec_back
+ 
+ res_front = res_front / tmp_front
+ res_back = res_back / tmp_back
+
+ units/w res_front
+ units/w res_back
+
+ rebin/log res_front bound1=emin step1=ebin bound2=emax
+ rebin/log res_back bound1=emin step1=ebin bound2=emax
+
+ res_front.title = get("titl")
+ res_front = res_front / 25.0
+ res_back.title = res_front.title	# Set title same as for forward bank.
+ res_back = res_back / 25.0
+
+ w6 = res_front
+ w8 = res_back
+
+#Convert to S(Q,w) for forward bank
+  e2 = 3.33
+  e1 = centre_bins(res_front.x) + e2
+  e1 = abs(e1)
+  k1 = 0.6934*sqrt(e1)
+  k2 = 0.6934*sqrt(e2)
+  res_front = res_front * (k1/k2)
+
+#Convert to S(Q,w) for backward bank
+  e2 = 3.33
+  e1 = centre_bins(res_back.x) + e2
+  e1 = abs(e1)
+  k1 = 0.6934*sqrt(e1)
+  k2 = 0.6934*sqrt(e2)
+  res_back = res_back * (k1/k2)
+                
+ tmp = get(1,home_dir+"trsl1100.ana")  
+
+ res_front = rebin(res_front, tmp.x)
+ res_back = rebin(res_back, tmp.x)
+ 
+ w5 = res_front
+ w7 = res_back
+ 
+ w5 = w5 * 1.e9
+ w6 = w6 * 1.e9 
+ w7 = w7 * 1.e9
+ w8 = w8 * 1.e9 
+ 
+ toggle/info/on
+
+ printin ""
+ printin "******************** BACKWARD BANK *****************************"
+ printin "  w8 contains counts proportional to double diff cross-section"
+ printin "  w7 contains counts proportional to S(q,w)                   "
+ printin ""
+ printin "******************** FORWARD  BANK *****************************"
+ printin "  w6 contains counts proportional to double diff cross-section"
+ printin "  w5 contains counts proportional to S(q,w)                   "
+ printin "****************************************************************"
+ printin ""
+
+ a=inquire("hello")
+
+  check_device_newin
+  display w5
+  alter/plotcolour $red 
+  plot w7
+
+
+ENDPROCEDURE
+

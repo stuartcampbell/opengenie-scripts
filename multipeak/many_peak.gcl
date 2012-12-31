@@ -1,0 +1,467 @@
+FORWARD init_sic_peakfit 
+FORWARD parse_sic_peakfit 
+FORWARD parse_sic_plotfit 
+FORWARD parse_sic_set 
+FORWARD parse_sic_fit 
+FORWARD parse_sic_fix 
+FORWARD parse_sic_free 
+FORWARD parse_sic_guess 
+FORWARD _sic_mp_help      
+FORWARD _sic_gofit      
+FORWARD _sic_set_range      
+FORWARD _sic_plotfit      
+FORWARD _sic_setpars      
+FORWARD _sic_setipropt      
+FORWARD _sic_showpars      
+
+PROCEDURE many_peaks
+ PARAMETERS w=WORKSPACE
+ RESULT out
+ LOCAL fit
+  fit = init_sic_peakfit(w)
+  fit = parse_sic_peakfit(w,fit)
+  out = fit
+ENDPROCEDURE
+
+PROCEDURE parse_sic_peakfit
+PARAMETERS data=WORKSPACE input=WORKSPACE
+RESULT safe
+LOCAL cmd main_cmd output arg current fity fite
+
+ output = fields()
+ output = input
+ current = fields()
+ current = input
+
+ LOOP
+ cmd = inquire_string("MP>")
+ cmd <~ uppercase(cmd)
+ EXITIF (cmd="EXIT")
+  main_cmd = substring(cmd,1,3)
+  CASE main_cmd
+   IS "HEL"
+    _sic_mp_help
+   IS "FIT"
+    output=parse_sic_fit(cmd,data,output)
+   IS "SHO"
+    _sic_showpars output
+   IS "SET"
+    output=parse_sic_set(cmd,data,output)
+   IS "GUE"
+    output=parse_sic_guess(cmd,data,output)
+   IS "FIX"
+    output=parse_sic_fix(cmd,data,output)
+   IS "FRE"
+    output=parse_sic_free(cmd,data,output)
+   IS "KEE"
+    safe = output
+   IS "LIM"
+    arg = substring(cmd,7)
+    arg = as_variable(arg)
+    _sic_set_range data output arg[1] arg[2]
+   IS "PLO"
+    parse_sic_plotfit cmd data output
+   OTHERWISE 
+    printen "Invalid command"
+   ENDCASE
+ ENDLOOP
+
+# output.y = multipeakgen(output.x,output.pars,output.types)
+# output.e = multipeakgen(output.x,output.sigpar,output.types)
+
+ safe = output
+
+ENDPROCEDURE 
+
+
+PROCEDURE parse_sic_plotfit
+PARAMETERS cmd data=WORKSPACE output=WORKSPACE
+LOCAL arg pos num tmp pars
+                                                               
+    arg = substring(cmd,5)
+    pos = locate(arg,"PEAK")
+
+    printn IS_A(arg,"string")
+    printn "pos="pos
+
+    IF (pos>0)
+     num = substring(arg,pos+5)
+     printn "num="num      
+     num = as_variable(num)*1.0
+     printin "plotting peak "num
+     tmp = fields()
+     tmp = output
+     pars = cut(tmp.pars, 1, num)
+     tmp.y = peakgen:gauss(centre_bins(tmp.x),pars)
+     alter/plotcolour $green
+     plot/line tmp
+     alter/plotcolour $white
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"CALC")!=0)
+     output.y = multipeakgen(output.x,output.pars,output.types)
+     output.e = multipeakgen(output.x,output.sigpar,output.types)
+    ENDIF
+
+    arg = as_variable(arg)
+    IF DEFINED(output.x)
+     output.y = multipeakgen(output.x,output.pars,output.types)
+     output.e = multipeakgen(output.x,output.sigpar,output.types)
+    ENDIF
+    _sic_plotfit data output
+ENDPROCEDURE 
+
+
+
+
+PROCEDURE parse_sic_set
+PARAMETERS cmd data=WORKSPACE output=WORKSPACE
+RESULT out
+LOCAL arg value
+
+    arg = substring(cmd,4)
+
+    arg = as_variable(arg)
+
+    IF (locate(arg,"CENT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+      value = inquire_real("Value for Peak "+as_string(i)+ &
+	      " , parameter "+as_string(4))
+      output.pars = _sic_setpars(output,i,4,value)
+	ENDLOOP
+      out = output
+     RETURN
+    ENDIF
+
+    value = inquire_real("Value for Peak "+as_string(arg[1])+ &
+	      " , parameter "+as_string(arg[2]))
+    output.pars = _sic_setpars(output,arg[1],arg[2],value)
+
+ 
+    out = output
+
+ENDPROCEDURE
+
+PROCEDURE parse_sic_fix
+PARAMETERS cmd data=WORKSPACE output=WORKSPACE
+RESULT out
+LOCAL arg value
+
+    arg = substring(cmd,4)
+
+    IF (locate(arg,"ALL")!=0)
+      fill output.ipropt 2
+      printin "Fixing all parameters"
+      out = output
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"CENT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+       output.ipropt = _sic_setipropt(output,2,i,4)
+	ENDLOOP
+      printin "Fixing centres"
+      out = output
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"WIDT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+       output.ipropt = _sic_setipropt(output,2,i,5)
+	ENDLOOP
+      printin "Fixing widths"
+      out = output
+     RETURN
+    ENDIF
+
+    arg = as_variable(arg)
+    output.ipropt = _sic_setipropt(output,2,arg[1],arg[2])
+  
+    out = output
+
+ENDPROCEDURE
+
+PROCEDURE parse_sic_free
+PARAMETERS cmd data=WORKSPACE output=WORKSPACE
+RESULT out
+LOCAL arg 
+
+    arg = substring(cmd,5)
+
+    IF (locate(arg,"ALL")!=0)
+      fill output.ipropt 0
+      printin "Freeing all parameters"
+      out = output
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"CENT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+       output.ipropt = _sic_setipropt(output,0,i,4)
+	ENDLOOP
+      out = output
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"WIDT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+       output.ipropt = _sic_setipropt(output,0,i,5)
+	ENDLOOP
+      out = output
+     RETURN
+    ENDIF
+
+    arg = as_variable(arg)
+    output.ipropt = _sic_setipropt(output,0,arg[1],arg[2])
+ 
+    out = output
+
+ENDPROCEDURE
+
+PROCEDURE parse_sic_guess
+PARAMETERS cmd data=WORKSPACE output=WORKSPACE
+RESULT out
+LOCAL arg value
+
+    arg = substring(cmd,6)
+
+    IF (locate(arg,"ALL")!=0)
+      fill output.ipropt 1
+      printin "Guessing all parameters"
+      out = output
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"CENT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+       output.ipropt = _sic_setipropt(output,1,i,4)
+	ENDLOOP
+      out = output
+     RETURN
+    ENDIF
+
+    IF (locate(arg,"WIDT")!=0)
+	LOOP i FROM 1 TO output.npeaks
+       output.ipropt = _sic_setipropt(output,1,i,5)
+	ENDLOOP
+      out = output
+     RETURN
+    ENDIF
+
+    arg = as_variable(arg)
+    output.ipropt = _sic_setipropt(output,1,arg[1],arg[2])
+
+    out = output
+
+ENDPROCEDURE
+
+
+PROCEDURE parse_sic_fit
+PARAMETERS cmd data=WORKSPACE output
+RESULT out
+LOCAL arg
+    
+    IF (max(output.pars)=min(output.pars))
+     printen "Please initialise some variables"
+     RETURN
+    ENDIF
+
+    arg = substring(cmd,4)
+    arg = as_variable(arg)
+
+    output = _sic_gofit(data, output, arg)
+    output.y = multipeakgen(output.x,output.pars,output.types)
+    output.e = multipeakgen(output.x,output.sigpar,output.types)
+
+    IF (output.igood<-1)
+     printen "Warning fit is not the best !!"
+    ENDIF
+
+    printin output
+
+    out = output
+
+ENDPROCEDURE
+
+
+PROCEDURE _sic_showpars
+ PARAMETERS p=WORKSPACE
+  
+  LOOP i FROM 1 TO p.npeaks
+   CASE p.types[i]
+    IS 1
+     printin "Peak "i" :Gaussian"
+     printin "==============================" 
+     IF (i=1)
+     printin ""
+     printin "Background slope    (p1): "p.pars[i,1]" +- "p.sigpar[i,1] &
+	"\t"p.ipropt[i,1]
+     printin "Background constant (p2): "p.pars[i,2]" +- "p.sigpar[i,2] &
+	"\t"p.ipropt[i,2]
+     ENDIF
+     printin ""
+     printin "Amplitude (p3): "p.pars[i,3]" +- "p.sigpar[i,3]"\t\t"p.ipropt[i,3]
+     printin "Centre    (p4): "p.pars[i,4]" +- "p.sigpar[i,4]"\t\t"p.ipropt[i,4]
+     printin "Sigma     (p5): "p.pars[i,5]" +- "p.sigpar[i,5]"\t\t"p.ipropt[i,5]
+     printin ""
+    IS 2
+     printin "Peak "i" :Gaussian + exponential"
+    IS 3
+     printin "Peak "i" :Lorentzian"
+    IS 4
+     printin "Peak "i" :Lorentzian + exponential"
+    IS 5
+     printin "Peak "i" :Voigt"
+    IS 6
+     printin "Peak "i" :Voigt + exponential"
+    IS 7
+     printin "Peak "i" :Polynomial"
+   ENDCASE
+  ENDLOOP
+
+ENDPROCEDURE 
+
+
+PROCEDURE _sic_setpars
+PARAMETERS p=WORKSPACE peak=INTEGER par=INTEGER value=REAL
+RESULT out 
+
+ IF (peak=_) OR (par=_) 
+  printen "Invalid syntax "
+  RETURN
+ ENDIF
+ 
+ out = p.pars
+ out[peak,par] = value
+
+ENDPROCEDURE
+
+
+PROCEDURE _sic_setipropt
+PARAMETERS p=WORKSPACE n=INTEGER peak=INTEGER par=INTEGER
+RESULT out 
+
+ IF (peak=_) OR (par=_) 
+  printen "Invalid syntax "
+  RETURN
+ ENDIF
+ 
+ out = p.ipropt
+
+ out[peak,par] = n
+
+ printn "ipropt (out) = "out
+
+ENDPROCEDURE
+
+
+PROCEDURE _sic_plotfit
+PARAMETERS data=WORKSPACE fit=WORKSPACE
+LOCAL ymin ymax lower upper
+ ymin = 0.0
+ lower = bracket(data.x, fit.xlimits[1])
+ upper = bracket(data.x, fit.xlimits[2])
+
+ ymax = max(data.y[(lower):(upper)])
+ ymax = ymax + (ymax/10.0)
+
+ display/errors data fit.xlimits[1] fit.xlimits[2] ymin ymax linecolour=$blue
+ plot/markers data
+ IF DEFINED(fit.x)
+  alter/plotcolour $red
+  plot/line fit
+  alter/plotcolour $white
+ ENDIF
+ENDPROCEDURE
+
+
+PROCEDURE _sic_gofit
+PARAMETERS data=WORKSPACE fitpars=WORKSPACE arg
+RESULT out
+LOCAL xyearr tmp
+ IF (fitpars.xlimits[1]=_)
+  fitpars.xlimits[1] = min(data.x)
+ ENDIF
+ IF (fitpars.xlimits[2]=_)
+  fitpars.xlimits[2] = max(data.x)
+ ENDIF
+ xyearr <~ __xyechunk(data,fitpars.xlimits[1],fitpars.xlimits[2])
+ tmp = multipeakfit(xyearr.x,xyearr.y,xyearr.e,fitpars.types, &
+	 fitpars.pars,fitpars.ipropt)
+ out = fields()
+ out = fitpars
+ out.pars = tmp.pars
+ out.sigpar = tmp.sigpar
+ out.igood = tmp.igood
+ out.x = xyearr.x
+ENDPROCEDURE
+
+PROCEDURE _sic_set_range
+ PARAMETERS data=WORKSPACE fitpars=WORKSPACE xmin=REAL xmax=REAL
+  IF DEFINED(xmin)
+   fitpars.xlimits[1] = xmin
+  ELSE
+   fitpars.xlimits[1] = min(data.x)
+  ENDIF
+  IF DEFINED(xmax)
+   fitpars.xlimits[2] = xmax
+  ELSE
+   fitpars.xlimits[2] = max(data.x)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE init_sic_peakfit
+PARAMETERS w=WORKSPACE
+RESULT res
+LOCAL work
+
+ work=fields()
+
+ work.npeaks = inquire_integer("How many peaks ?")
+
+ work.types = dimensions(work.npeaks)
+ fill work.types 0
+ work.pars = dimensions(work.npeaks, 10)
+ fill work.pars 0.0
+ work.sigpar = dimensions(work.npeaks, 10)
+ fill work.sigpar 0.0
+ work.ipropt = dimensions(work.npeaks, 10)
+ fill work.ipropt 0
+
+ work.xlimits = dimensions(2)
+ work.xlimits[1] = min(w.x)
+ work.xlimits[2] = max(w.x)
+ 
+ work.x = _
+
+  print "\n"
+  print "\t1. Gaussian\n\t2. Gaussian convolved with exponential\n&
+  \t3. Lorentzian\n\t4. Lorentzian convolved with exponential\n&
+  \t5. Voigt\n\t6. Voigt convolved with exponential\n\t7. Polynomial\n "
+
+  LOOP i FROM 1 TO work.npeaks
+  work.types[i] = inquire_integer("Peak shape to fit for peak "+as_string(i))
+  ENDLOOP
+
+  LOOP i FROM 2 TO work.npeaks
+   work.pars[i,1] = 0.0
+   work.pars[i,2] = 0.0
+   work.ipropt[i,1] = 2
+   work.ipropt[i,2] = 2
+  ENDLOOP
+
+ res = work
+
+ENDPROCEDURE
+
+PROCEDURE _sic_mp_help
+ print "\n"
+ print "Basic Commands are :\n"
+ printn ""
+ printn "\tset n m\t\t==> where n=peak number, m=peak paramter"
+ printn "\tguess n m\t==> where n=peak number, m=peak paramter"
+ printn "\tfree n m\t==> where n=peak number, m=peak paramter"
+ printn "\tlimits xmin xmax\t==> set fitting range"
+ENDPROCEDURE
+

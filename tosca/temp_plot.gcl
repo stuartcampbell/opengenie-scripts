@@ -1,0 +1,12 @@
+ 
+PROCEDURE tp
+PARAMETERS n=INTEGER
+GLOBAL w1
+ IF (n=_); n=inquire_integer(" Run number ?"); ENDIF
+ w1 = tp1(n)
+ENDPROCEDURE
+
+PROCEDURE tpc
+GLOBAL w1
+ w1 = tp1:c()
+ENDPROCEDURE   

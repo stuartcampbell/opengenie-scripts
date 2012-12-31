@@ -1,0 +1,203 @@
+# POLFOCUS :- General POLARIS focussing routine
+#
+# Uses run number to determine what background and vanadium files are
+# to be used to correct the data.
+#
+# Stuart Campbell (ISIS) (10/7/98)
+#
+# last modified by Stuart Campbell & Ron Smith (27/7/98)
+#
+
+ PROCEDURE polfocus
+ QUALIFIERS /A /B /C /E /M /P /NOBACK
+ PARAMETERS nrun=integer tmin=real tmax=real back=integer van=integer &
+            det=integer bfile=string vfile=string dfile=string
+
+  RESULT res
+
+  LOCAL nrun n tlimits prefix av_pars specific
+  LOCAL det_file van_file back_file
+
+  LOCAL tmp par_file pars bckgrd vanadium monitor area
+
+
+  IF called_as_function()
+
+   IF (DEFINED(nrun)=$FALSE)
+    nrun = inquire("Enter run number")
+   ENDIF
+
+   assign nrun
+
+   IF (A)
+    prefix = "a"
+   ELSEIF (B)
+    prefix = "b"
+   ELSEIF (C)
+    prefix = "c"
+   ELSEIF (E)
+    prefix = "e"
+   ELSEIF (M)
+    prefix = "m"
+   ELSEIF (P)
+    prefix = "p"
+   ENDIF
+
+# determine which detector, background and vanadium files are to be used
+
+   IF (OS() = "VMS")
+
+   IF DEFINED(back)
+    back_file = "pol_calib_empty:"+prefix+"b"+as_string(back)+".dat"
+   ELSE
+    back_file = "pol_calib_empty:"+prefix+"back.dat"
+   ENDIF
+
+   IF DEFINED(van)
+    van_file = "pol_calib_van:"+prefix+"v"+as_string(van)+".dat"
+   ELSE
+    van_file = "pol_calib_van:"+prefix+"van.dat"
+   ENDIF
+
+   IF DEFINED(det)
+    det_file = "pol_opengenie:"+prefix+"d"+as_string(det)+".dat"
+   ELSE
+    det_file = "pol_opengenie:"+prefix+"det.dat"
+   ENDIF
+
+   ELSE   
+
+# If not running under VMS, assume that the corresponding calibration
+# files are stored in the current working directory
+
+   IF DEFINED(back)
+    back_file = prefix+"b"+as_string(back)+".dat"
+   ELSE
+    back_file = prefix+"back.dat"
+   ENDIF
+
+   IF DEFINED(van)
+    van_file = prefix+"v"+as_string(van)+".dat"
+   ELSE
+    van_file = prefix+"van.dat"
+   ENDIF
+
+   IF DEFINED(det)
+    det_file = prefix+"d"+as_string(det)+".dat"
+   ELSE
+    det_file = prefix+"det.dat"
+   ENDIF
+
+   ENDIF
+
+   IF DEFINED(bfile)
+    back_file = as_string(bfile)
+   ENDIF
+   IF DEFINED(vfile)
+    van_file = as_string(vfile)
+   ENDIF
+   IF DEFINED(dfile)
+    det_file = as_string(dfile)
+   ENDIF
+               
+#
+# Read in detector parameters from file.
+#
+  par_file = asciifile:open(det_file,comment="#")  
+   tlimits = asciifile:readfree(par_file, "min,max", count=1) 
+   av_pars = asciifile:readfree(par_file, "l1,l2,twotheta", count=1) 
+  asciifile/readfree par_file "NSPEC,L1,L2,TWOTHETA,EMODE,EFIXED" &
+   count=-1
+  pars = asciifile:data(par_file)
+  asciifile/close par_file
+              
+  IF defined(tmin)
+   tlimits.min[1] = tmin
+  ENDIF
+  IF defined(tmax)
+   tlimits.max[1] = tmax
+  ENDIF
+
+  n = length(pars.nspec)
+
+  res=focus:d(pars.nspec,specpars=pars)
+                       
+# Normalise to incident beam monitor
+ 
+  monitor=s(1)
+  area=integrate(monitor,2000.0,2200.0)
+  res = res / area.sum
+              
+  res.twotheta = av_pars.twotheta[1]
+  res.l1 = av_pars.l1[1]
+  res.l2 = av_pars.l2[1]
+  units/t res
+
+   rebin res tlimits.min[1] tlimits.max[1]
+
+   res.y = res.y * (252.82*2.0*(sum(pars.l1))/n)
+   res.e = res.e * (252.82*2.0*(sum(pars.l1))/n)
+  
+# Subtract instrumental background
+  
+  IF (NOBACK)
+    printin "Not subtracting an instrumental background"
+  ELSE
+    bckgrd = get(1,back_file)
+    bckgrd=rebin(bckgrd,res.x)
+    res = res - bckgrd
+  ENDIF
+
+# Normalise to vanadium spectrum
+ 
+  vanadium = get(1,van_file)
+  vanadium = rebin(vanadium,res.x)
+  res = res / vanadium
+ 
+  rebin res tlimits.min[1] tlimits.max[1]
+
+  res.bank = prefix
+
+ ELSE
+  printen "Please call this routine in the form of a function"
+ ENDIF
+
+ ENDPROCEDURE
+
+#####################################################################
+
+# Small routine to be backward compatible with the old AFOCUS command
+
+ PROCEDURE afocus
+ RESULT out
+  out=polfocus:a()
+ ENDPROCEDURE
+
+# Small routine to be backward compatible with the old CFOCUS command
+
+ PROCEDURE cfocus
+ RESULT out
+  out=polfocus:c()
+ ENDPROCEDURE
+
+# Small routine to be backward compatible with the old EFOCUS command
+
+ PROCEDURE efocus
+ RESULT out
+  out=polfocus:e()
+ ENDPROCEDURE
+
+# Small routine to be backward compatible with the old MFOCUS command
+
+ PROCEDURE mfocus
+ RESULT out
+  out=polfocus:m:noback()
+ ENDPROCEDURE
+
+# Small routine to be backward compatible with the old PFOCUS command
+
+ PROCEDURE pfocus
+ RESULT out
+  out=polfocus:p:noback()
+ ENDPROCEDURE
+

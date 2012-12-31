@@ -1,0 +1,23 @@
+PROCEDURE multiply_bins
+PARAMETERS win factor=REAL
+RESULT wout
+LOCAL bins
+ IF (factor=_); factor = 1.0; ENDIF
+ wout = win
+ bins = wout.x[2:(wout.ntc+1)]-wout.x[1:(wout.ntc)]
+ bins = bins * factor
+ wout.y = wout.y * bins
+ wout.e = wout.e * bins
+ENDPROCEDURE
+
+PROCEDURE divide_bins
+PARAMETERS win factor=REAL
+RESULT wout
+LOCAL bins
+ IF (factor=_); factor = 1.0; ENDIF
+ wout = win
+ bins = wout.x[2:(wout.ntc+1)]-wout.x[1:(wout.ntc)]
+ bins = bins * factor
+ wout.y = wout.y / bins
+ wout.e = wout.e / bins
+ENDPROCEDURE

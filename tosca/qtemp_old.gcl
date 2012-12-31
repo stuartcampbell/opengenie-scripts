@@ -1,0 +1,97 @@
+
+PROCEDURE rehack
+ RESULT res
+
+ GLOBAL ibin ebin emin emax pars tmp total_spec bins
+ GLOBAL w1 w2 w3 w4 w5 w6 e1 e2 k1 k2
+
+ LOCAL par_file av_l1 av_l2 av_tt av_ef
+
+ ibin = 1
+ ebin = 0.005
+ emin = 2.
+ emax = 500.
+
+# setup normalisation
+
+ w1 = s(64)
+ w2 = s(141)
+
+ setpar w2 11.04 0.0 90.0 0 0.0
+ units/lam w2
+ w2 = wexm(w2)
+ setpar w1 12.264 0.6791 90.0 2 2.9168
+ units/la1 w1
+ w2 = rebin(w2, w1.x)
+ w2.xlabel = w1.xlabel
+ w4=w1/w2
+ units/w w4
+ w4 = rebin:log(w4, emin, ebin, emax)
+ clear w4
+
+# detectors
+
+ par_file = asciifile:open("user$disk:[sic01.opengenie.tosca]tosca.par", &
+ comment="!")
+ asciifile/readfree par_file "NSPEC,L1,L2,TWOTHETA,EMODE,EFIXED" &
+ count=-1
+ pars = asciifile:data(par_file)
+ asciifile/close par_file
+
+ tmp = focus:w(pars.nspec,specpars=pars)
+ 
+ rebin/log tmp bound1=emin step1=ebin bound2=emax
+ 
+ res = tmp
+
+ total_spec = length(pars.nspec)
+ 
+ av_l1=(sum(pars.l1)/total_spec)
+ av_l2=(sum(pars.l2)/total_spec)
+ av_tt=(sum(pars.twotheta)/total_spec)
+ av_ef=(sum(pars.efixed)/total_spec)
+
+ setpar tmp l1=av_l1 l2=av_l2 tt=av_tt em=2 ef=av_ef
+# setpar tmp 12.264 0.6791 90.0 2 2.9168
+
+ units/la1 tmp
+
+ res = rebin(tmp, w2.x)
+ 
+# printn "Total No of spec = "total_spec
+
+ tmp = w2 * total_spec
+ 
+ res = res / tmp
+
+ units/w res
+
+ rebin/log res bound1=emin step1=ebin bound2=emax
+
+ res.title = get("titl")
+
+ w6 = res
+
+  e2 = 3.5
+  e1 = centre_bins(res.x) + e2
+  e1 = abs(e1)
+  k1 = 0.6934*sqrt(e1)
+  k2 = 0.6934*sqrt(e2)
+  res = res * (k1/k2)
+
+ w5 = res
+ 
+ w5 = w5 * 1.e9
+ w6 = w6 * 1.e9
+
+ printin ""
+ printin "****************************************************************"
+ printin "  w6 contains counts proportional to double diff cross-section"
+ printin "  w5 contains counts proportional to S(q,w)                   "
+ printin "****************************************************************"
+ printin ""
+
+ display w5 
+
+ENDPROCEDURE
+

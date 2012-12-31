@@ -1,0 +1,394 @@
+#
+# Peak fitting routines and function generation module
+#
+PROCEDURE __PEAKNAMES
+PARAMETERS I=Integer
+RESULT S
+CASE I
+    IS 1
+	S="Gaussian"
+    IS 2
+        S="Gaussian + exponential"
+    IS 3
+        S="Lorentzian + exponential"
+    IS 4
+        S="Lorentzian"
+    IS 5
+        S="Voigt"
+    IS 6
+        S="Voigt + exponential"
+    IS 7
+        S="Polynomial"
+ENDCASE
+ENDPROCEDURE
+#
+PROCEDURE MULTIPEAKGEN
+#
+# PARS: on input is array of parameters obtained from a call to PEAK
+#
+PARAMETERS x=realarray pars=realarray types=integerarray
+RESULT y
+LOCAL e=dimensions(1) sigpar=dimensions(6) ipropt=dimensions(6) igood=0
+IF NOT DEFINED(X) OR NOT DEFINED(PARS)
+    PRINTEN "MULTIPEAKGEN: Not all required parameters given"
+    RETURN
+ENDIF
+y = dimensions(length(x))
+e[1] = 0.0; ipropt[1] = 0; sigpar[1]=0.0	# e,ipropt,sigpar not used, but must be present due to callout syntax
+y[1] = 0.0
+callout facility="intPeak" function=17
+ENDPROCEDURE
+#
+#
+# TYPE: GAUSS=1 GEXP=2 LOREN=3 LEXP=4 VOIGT=5 VEXP=6 POLY=7
+# PARS(NPEAKS,PEAKPARS) 
+# IPROPT(NPEAKS,PEAKIPROPT)
+#
+PROCEDURE MULTIPEAKFIT
+PARAMETERS x=realarray y=realarray e=realarray types=integerarray &
+	pars=realarray ipropt=integerarray
+RESULT RES
+LOCAL res=fields(3) igood=0 sigpar NPEAKS I
+IF NOT DEFINED(X) OR NOT DEFINED(Y) OR NOT DEFINED(E)
+    PRINTEN "MULTIPEAKFIT: Not all required parameters given"
+    RETURN
+ENDIF
+IF LENGTH(X) != LENGTH(Y)
+    PRINTEN "MULTIPEAKFIT: X and Y arrays must be the same length"
+    RETURN
+ENDIF
+%( gXnpeaks _ (gXpars dimensions) at: 1 )%
+LOOP I FROM 1 TO NPEAKS
+    PRINTN "Fitting " __PEAKNAMES(TYPES[I]) " shape to peak " I
+ENDLOOP
+SIGPAR=PARS
+FILL SIGPAR 0.0
+CALLOUT FACILITY="intPeak" FUNCTION=16
+RES.PARS = PARS
+RES.IGOOD = IGOOD
+RES.SIGPAR = SIGPAR
+ENDPROCEDURE
+#
+PROCEDURE PEAKFIT
+QUALIFIERS /GAUSS /GEXP /LOREN /LEXP /VOIGT /VEXP /INIT /POLY
+PARAMETERS x=realarray y=realarray e=realarray pars=realarray ipropt=integerarray
+RESULT RES
+LOCAL res=fields(3) igood=0 sigpar
+#
+# PARS: on input is array of parameters to be fixed or used as an initial guess
+#       on output is optimised values
+# SIGPAR: on output is the 1-sigma error bars for pars
+# IPROT: on input controls the treatment of PARS (0 = no initial estimate, 1 = use as guess, 2 = fix value at that given)
+# IGOOD: on output is the status of the fit ( < -1 = really bad, -1 = may be OK, else OK)
+#
+# provide help if required
+    IF NOT DEFINED(X) OR NOT DEFINED(Y) OR NOT DEFINED(E)
+	PRINTEN "PEAKFIT: Not all required parameters given"
+	RETURN
+    ENDIF
+    IF LENGTH(X) != LENGTH(Y)
+	PRINTEN "PEAKFIT: X and Y arrays must be the same length"
+	RETURN
+    ENDIF
+
+    IF NOT DEFINED(pars)
+        IF POLY
+	    pars = dimensions(1)
+	ELSEIF GAUSS OR LOREN
+	    pars = dimensions(5)
+	ELSEIF VEXP
+	    pars = dimensions(7)
+	ELSE
+	    pars = dimensions(6)
+	ENDIF
+        LOOP I FROM 1 TO LENGTH(PARS); PARS[I] = 0.0; ENDLOOP
+    ENDIF
+
+    IF POLY
+	sigpar = dimensions(length(pars))
+    ELSEIF GAUSS OR LOREN
+	sigpar = dimensions(5)
+    ELSEIF VEXP
+	sigpar = dimensions(7)
+    ELSE
+	sigpar = dimensions(6)
+    ENDIF
+    sigpar[1]=0.0
+
+    IF NOT DEFINED(ipropt)
+        IF POLY
+	    ipropt = dimensions(length(pars))
+	ELSEIF GAUSS OR LOREN
+	    ipropt = dimensions(5)
+	ELSEIF VEXP
+	    ipropt = dimensions(7)
+	ELSE
+	    ipropt = dimensions(6)
+	ENDIF
+        LOOP I FROM 1 TO LENGTH(ipropt); ipropt[I] = 0; ENDLOOP
+    ENDIF
+
+    IF INIT
+        callout facility="intPeak" function=1
+    ELSEIF GAUSS
+        printin "Fitting to Gaussian peak shape"
+        callout facility="intPeak" function=2
+    ELSEIF GEXP
+        printin "Fitting to Gaussian + exponential peak shape"
+        callout facility="intPeak" function=3
+    ELSEIF LEXP
+        printin "Fitting to Lorentzian + exponential peak shape"
+        callout facility="intPeak" function=4
+    ELSEIF LOREN
+        printin "Fitting to Lorentzian peak shape"
+        callout facility="intPeak" function=5
+    ELSEIF VOIGT
+        printin "Fitting to Voigt peak shape"
+        callout facility="intPeak" function=6
+    ELSEIF VEXP
+        printin "Fitting to Voigt + exponential peak shape"
+        callout facility="intPeak" function=14
+    ELSEIF POLY
+        printin "Fitting to Polynomial (degree " LENGTH(PARS) - 1 ")"
+        callout facility="intPeak" function=12
+    ELSE
+        printen "PEAKFIT: Invalid or non-existent qualifier"
+    ENDIF
+    IF G_ERROR_HANDLER()
+	RES = _
+    ELSE
+    	RES.PARS = PARS
+    	RES.IGOOD = IGOOD
+    	RES.SIGPAR = SIGPAR
+    ENDIF
+
+ENDPROCEDURE
+comment "peakfit" "Fit a peak shape to user data"
+#
+PROCEDURE PEAKGEN
+QUALIFIERS /GAUSS /GEXP /LOREN /LEXP /VOIGT /VEXP /POLY
+#
+# PARS: on input is array of parameters obtained from a call to PEAK
+#
+PARAMETERS x=realarray pars=realarray
+RESULT y
+LOCAL e=dimensions(1) sigpar=dimensions(6) ipropt=dimensions(6) igood=0
+IF NOT DEFINED(X) OR NOT DEFINED(PARS)
+    PRINTEN "PEAKGEN: Not all required parameters given"
+    RETURN
+ENDIF
+y = dimensions(length(x))
+e[1] = 0.0; ipropt[1] = 0; sigpar[1]=0.0	# e,ipropt,sigpar not used, but must be present due to callout syntax
+y[1] = 0.0
+IF GAUSS
+	callout facility="intPeak" function=7
+ELSEIF GEXP
+	callout facility="intPeak" function=8
+ELSEIF LOREN
+	callout facility="intPeak" function=9
+ELSEIF LEXP
+	callout facility="intPeak" function=10
+ELSEIF VOIGT
+	callout facility="intPeak" function=11
+ELSEIF VEXP
+	callout facility="intPeak" function=15
+ELSEIF POLY
+	callout facility="intPeak" function=13
+ELSE
+	PRINTEN "PEAKGEN: Invalid or non-existent qualifier"
+ENDIF
+IF G_ERROR_HANDLER()
+    y = _
+ENDIF
+ENDPROCEDURE
+comment "peakgen" "Generate Y points for a peak from supplied parameters and X values"
+#
+# PROCEDURES to inplement GENIE-II peak command
+#
+PROCEDURE __XYECHUNK
+PARAMETERS W=Workspace XMIN=Real XMAX=Real
+RESULT XYEARRAYS
+LOCAL XYEARRAYS=FIELDS() IMIN IMAX XTMP
+%(
+    |x y|
+    x _ gXw at: #gXx.
+    y _ gXw at: #gXy.
+    ( (x size) = (y size) )
+	ifTrue: [ gXxtmp _ x ]
+	ifFalse: [ gXxtmp _ x centre ]
+)%
+IMIN = BRACKET(XTMP,XMIN)
+IF (IMIN = -1); IMIN=1; ENDIF
+IMAX = BRACKET(XTMP,XMAX)
+IF (IMAX = -1); IMAX=LENGTH(XTMP); ENDIF
+XYEARRAYS.X  <~ XTMP[(IMIN):(IMAX)]
+XYEARRAYS.Y  <~ W.Y[(IMIN):(IMAX)]
+XYEARRAYS.E  <~ W.E[(IMIN):(IMAX)]
+ENDPROCEDURE
+#
+PROCEDURE __XMINMAX
+RESULT CHAR
+PARAMETERS XLIMITS = Realarray
+LOCAL CURSOR
+CURSOR = GET_CURSOR(0.0,0.0)
+CHAR = CURSOR.CHAR
+IF CHAR = "A"
+  XLIMITS[1] = CURSOR.W_X
+  CURSOR = GET_CURSOR(CURSOR.W_X,CURSOR.W_Y)
+  CHAR = CURSOR.CHAR
+  IF CHAR = "A"
+    XLIMITS[2] = CURSOR.W_X
+  ENDIF
+ENDIF
+ENDPROCEDURE
+#
+PROCEDURE __SHOWFIT
+PARAMETERS W = Workspace
+LOCAL I
+PRINTN "Function : " W.TYPE
+PRINTN "Description : " W.DESC
+LOOP I FROM 1 TO LENGTH(W.PARS)
+PRINTN "Parameter P"I  ": " W.PARS[I] " +- " W.SIGPAR[I]
+ENDLOOP
+ENDPROCEDURE
+#
+PROCEDURE MULTIPEAK
+PARAMETERS W=Workspace
+RESULT RES
+LOCAL C ANS I XLIMITS XVALS YVALS TMP PARS FITTEDY
+LOCAL NFUNC CHAR X1 Y1 X2 Y2 XYECHUNK XYEARRAYS NPEAKS TYPES IPROPT
+IF NOT DEFINED(W)
+    PRINTEN "MULTIPEAK: Must supply a workspace"
+    RETURN
+ENDIF
+# Set this value equal to the number of functions the user can choose
+NFUNC = 7
+XLIMITS = dimensions(2)
+XLIMITS[1]=W.X[1]
+XLIMITS[2]=W.X[LENGTH(W.X)]
+PRINTN "Click left to set x-bounds for region to fit, right to continue"
+LOOP I FROM 1 TO 100 STEP 1
+  DISPLAY/MARKERS W XLIMITS[1] XLIMITS[2]
+  CHAR = __XMINMAX(XLIMITS)
+  EXITIF ( CHAR = "X" )
+ENDLOOP
+# which should we use?
+#  XYEARRAYS <~ __XYECHUNK(W,XLIMITS[1],XLIMITS[2])
+  XYEARRAYS <~ __XYECHUNK(_GR_WKSP,XLIMITS[1],XLIMITS[2])
+NPEAKS=INQUIRE("Number of peaks to fit")
+PRINTN "Click a number on each peak centre to fit"
+  PRINT "\nFit \t1. Gaussian\n\t2. Gaussian convolved with exponential\n&
+  \t3. Lorentzian\n\t4. Lorentzian convolved with exponential\n&
+  \t5. Voigt\n\t6. Voigt convolved with exponential\n\t7. Polynomial\n "
+TYPES=DIMENSIONS(NPEAKS)
+FILL TYPES 0
+PARS=DIMENSIONS(NPEAKS,10)
+FILL PARS 0.0
+IPROPT=DIMENSIONS(NPEAKS,10)
+FILL IPROPT 0
+C=FIELDS();C.W_X=0.0;C.W_Y=0.0
+LOOP I FROM 1 TO NPEAKS
+    C=GETCURSOR(C.W_X,C.W_Y)
+    TYPES[I] = AS_VARIABLE(C.CHAR)
+    PARS[I,4] = C.W_X
+    IPROPT[I,4] = 2	# fix
+    PRINTIN "Selected " __PEAKNAMES(TYPES[I]) " at " C.W_X
+ENDLOOP
+RES = MULTIPEAKFIT(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E,TYPES,PARS,IPROPT)
+PRINTN RES
+FITTEDY = MULTIPEAKGEN(XYEARRAYS.X,RES.PARS,TYPES)
+PRINTN FITTEDY
+DRAW/PLOT XYEARRAYS.X FITTEDY $GREEN $FULL 2.0
+ENDPROCEDURE
+#
+PROCEDURE PEAK
+PARAMETERS W=Workspace
+RESULT RES
+LOCAL ANS I XLIMITS XVALS YVALS TMP PARS FITTEDY
+LOCAL NFUNC CHAR X1 Y1 X2 Y2 XYECHUNK XYEARRAYS
+IF NOT DEFINED(W)
+    PRINTEN "PEAK: Must supply a workspace"
+    RETURN
+ENDIF
+# Set this value equal to the number of functions the user can choose
+NFUNC = 7
+XLIMITS = dimensions(2)
+XLIMITS[1]=W.X[1]
+XLIMITS[2]=W.X[LENGTH(W.X)]
+PRINTN "Click left to set x-bounds for region to fit, right to continue"
+LOOP I FROM 1 TO 100 STEP 1
+  DISPLAY/MARKERS W XLIMITS[1] XLIMITS[2]
+  CHAR = __XMINMAX(XLIMITS)
+  EXITIF ( CHAR = "X" )
+ENDLOOP
+
+# Which should we use?
+#  XYEARRAYS <~ __XYECHUNK(W,XLIMITS[1],XLIMITS[2])
+  XYEARRAYS <~ __XYECHUNK(_GR_WKSP,XLIMITS[1],XLIMITS[2])
+  PRINT "\nFit \t1. Gaussian\n\t2. Gaussian convolved with exponential\n&
+  \t3. Lorentzian\n\t4. Lorentzian convolved with exponential\n&
+  \t5. Voigt\n\t6. Voigt convolved with exponential\n\t7. Polynomial\n\t8. Do nothing\n\n\tWhich ? "
+  ANS = INQUIRE()
+
+  CASE ANS
+    IS 1
+      RES = PEAKFIT:GAUSS(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E)
+      FITTEDY = PEAKGEN:GAUSS(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Gaussian"
+      RES.DESC = "Y = P1x + P2 + P3*Gauss(P4,P5)"
+    IS 2
+      RES = PEAKFIT:GEXP(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E)
+      FITTEDY = PEAKGEN:GEXP(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Gaussian convolved with an exponential"
+      RES.DESC = "Y = P1x + P2 + P3*Gsexp(P4,P5,P6)"
+    IS 3
+      RES = PEAKFIT:LOREN(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E)
+      FITTEDY = PEAKGEN:LOREN(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Lorentzian"
+      RES.DESC = "Y = P1x + P2 + P3*Lorentz(P4,P5)"
+    IS 4
+      RES = PEAKFIT:LEXP(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E)
+      FITTEDY = PEAKGEN:LEXP(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Lorentzian convolved with an exponential"
+      RES.DESC = "Y = P1x + P2 + P3*Lzexp(P4,P5,P6)"
+  ENDCASE
+  CASE ANS
+    IS 5
+      RES = PEAKFIT:VOIGT(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E)
+      FITTEDY = PEAKGEN:VOIGT(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Voigt"
+      RES.DESC = "Y = P1x + P2 + P3*Voigt(P4,P5,P6)"
+    IS 6
+      RES = PEAKFIT:VEXP(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E)
+      FITTEDY = PEAKGEN:VEXP(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Voigt convolved with an exponential"
+      RES.DESC = "Y = P1x + P2 + P3*Vtexp(P4,P5,P6,P7)"
+    IS 7
+      TMP = INQUIRE("Degree of polynomial")
+      PARS=DIMENSIONS(TMP+1)
+      FILL PARS 0.0
+      RES = PEAKFIT:POLY(XYEARRAYS.X,XYEARRAYS.Y,XYEARRAYS.E,PARS)
+      FITTEDY = PEAKGEN:POLY(XYEARRAYS.X,RES.PARS)
+      RES.TYPE = "Polynomial (degree" + AS_STRING(TMP) + ")"
+      RES.DESC = "Y = P1 + P2*x + p3*x^2 + ... "
+    IS 8
+      PRINTN "Peak fit cancelled"
+  ENDCASE
+
+  IF (ANS >= 1) AND (ANS <= NFUNC)
+    # Plot fitted curve in green
+    DRAW/PLOT XYEARRAYS.X FITTEDY $GREEN $FULL 2.0
+    __SHOWFIT RES
+  ENDIF
+  IF (ANS >= 1) AND (ANS <= NFUNC) AND (ANS != 7)
+    # Plot straight line component (if not polynomial fit)
+    X1 = MIN(XYEARRAYS.X)
+    Y1 = RES.PARS[1]*X1 + RES.PARS[2]
+    X2 = MAX(XYEARRAYS.X)
+    Y2 = RES.PARS[1]*X2 + RES.PARS[2]
+    DRAW/LINE X1 Y1 X2 Y2 $YELLOW $DOT
+  ENDIF
+
+LIMITS/DEFAULT
+ENDPROCEDURE
+

@@ -1,0 +1,83 @@
+c.........................................................................
+c
+c		Author:		W.I.F.David
+c		Date:		12-JUNE-1985
+c		Purpose:	Makes life easier for user in user
+c				program associated with FUNCTION command
+c				in GENIE: contains all the necessary
+c				parameters for data transfer.
+c		Revision:	$Id: functcom.cmn,v 1.6 2001/07/27 16:28:30 cmm Exp $
+c
+c	mn		maximum possible number of points in array
+c
+c
+c......................... INPUT PARAMETERS .............................
+c
+c	L1 & L2		primary and secondary flight paths (metres)
+c	xcode & ycode	code for unit contents of x and y arrays
+c	in_history	input work space history
+c	in_title	input title
+c	xcaptin		x axis caption	(similarly ycaptin for y axis)
+c	lpt		number of points in x,y,e arrays in data file
+c	delta		stand-off time in microseconds of input workspace
+c	tthet & fi	two theta and azimuthal scattering angles
+c	inst_name	instrument name
+c	inst_code	instrument code
+c	user_par	user-defined parameters
+c	st_var		array of stored variables used in GENIE
+c
+c
+c......................... OUTPUT PARAMETERS .............................
+c
+c	xcode & ycode	code for unit contents of x and y arrays
+c	out_history	output work space history
+c	out_title	output title
+c	xcaptout	x axis caption	(similarly ycaptout for y axis)
+c	user_par	user-defined parameters
+c	st_var		array of stored variables used in GENIE
+c
+c.........................................................................
+c
+c IMPORTANT: increment "functcom_ver" if the size of the common blocks changes
+c
+        integer                 functcom_ver
+        parameter               (functcom_ver=1)
+	integer			mn,max_user_par,max_st_var
+	parameter		(mn=33000,max_user_par=30,max_st_var=20)
+	real			L1,L2,delta,tthet,fi,run_duration
+	integer			xcode_in,ycode_in
+	integer			inst_code,n_user_par,n_st_var,lpt
+	integer			no_spectrum,run_number
+	integer			xcode_out,ycode_out
+	integer			ibin_mode
+	character*200		in_history,out_history
+	character*80		in_title,out_title
+	character*40		xcaptin,ycaptin,xcaptout,ycaptout
+	character*20		start_time,run_user
+	character*8		inst_name
+	real			xin(mn),yin(mn),ein(mn)
+	real			yout(mn),eout(mn)
+	real			user_par(MAX_USER_PAR),st_var(MAX_ST_VAR)
+
+!MS$ IF DEFINED (IN_GENIE_DLL) 
+!MS$	ATTRIBUTES DLLEXPORT :: /og_funct_in/
+!MS$	ATTRIBUTES DLLEXPORT :: /og_funct_out/
+!MS$ ELSE 
+!MS$	ATTRIBUTES DLLIMPORT :: /og_funct_in/
+!MS$	ATTRIBUTES DLLIMPORT :: /og_funct_out/
+!MS$ ENDIF 
+
+
+	common	/og_funct_in/ 	lpt,xin,yin,ein,
+     +				xcaptin,ycaptin,in_title,
+     +				delta,inst_code,inst_name,
+     +				xcode_in,ycode_in,L1,L2,tthet,
+     +				no_spectrum,run_number,run_user,
+     +				run_duration,start_time,fi,
+     +				user_par,st_var,
+     +				in_history,n_user_par,n_st_var,
+     +				ibin_mode
+	common	/og_funct_out/ 	yout,eout,
+     +				xcaptout,ycaptout,out_title,
+     +				xcode_out,ycode_out,out_history
+	save /og_funct_in/,/og_funct_out/

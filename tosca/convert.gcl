@@ -1,0 +1,16 @@
+FORWARD mev_to_cm
+
+PROCEDURE con
+ PARAMETERS win
+ RESULT wout
+ wout = mev_to_cm(win)
+ENDPROCEDURE
+
+
+PROCEDURE mev_to_cm
+PARAMETERS win
+RESULT wout
+LOCAL mev2cm = 8.066
+wout = win; wout.x = wout.x * mev2cm
+wout.xlabel = "Energy Transfer \\gDE=E1-E2 (cm\\u-1\\d)"
+ENDPROCEDURE

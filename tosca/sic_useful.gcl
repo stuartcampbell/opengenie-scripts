@@ -1,0 +1,318 @@
+
+##################################################################
+# Some useful little routines                                     
+##################################################################
+
+PROCEDURE pp
+PARAMETERS WORK=workspace
+	alter/linetype $dash
+	alter/plotcolour $red
+	plot WORK
+	alter/linetype $full
+ENDPROCEDURE
+
+PROCEDURE red
+ alter/plotcolour $red
+ printin "Plot colour changed to RED"
+ENDPROCEDURE
+
+PROCEDURE blue
+ alter/plotcolour $blue
+ printin "Plot colour changed to BLUE"
+ENDPROCEDURE
+
+PROCEDURE green
+ alter/plotcolour $green
+ printin "Plot colour changed to GREEN"
+ENDPROCEDURE
+
+PROCEDURE yellow
+ alter/plotcolour $yellow
+ printin "Plot colour changed to YELLOW"
+ENDPROCEDURE
+
+PROCEDURE purple
+ alter/plotcolour $purple
+ printin "Plot colour changed to PURPLE"
+ENDPROCEDURE
+
+PROCEDURE color
+PARAMETERS col
+ alter/plotcolour col 
+ alter/linecolour col
+ alter/textcolour col
+ENDPROCEDURE
+
+PROCEDURE resize
+ PARAMETERS x=REAL y=REAL
+ GLOBAL current_pic
+ current_pic = pic(0)
+ device/close
+ device/open "xw" x y
+ redraw current_pic
+ pic_add item=current_pic dest=pic(0) 
+ENDPROCEDURE
+
+PROCEDURE newin
+	device/open "xw" 6.5 4.5
+ENDPROCEDURE
+
+PROCEDURE newwin
+	device/open "xw" 6.5 4.5
+ENDPROCEDURE
+
+PROCEDURE smallwin
+	device/open "xw" 4.5 3.0
+ENDPROCEDURE
+
+PROCEDURE sqwin
+	device/open "xw" 5.0 5.0
+ENDPROCEDURE
+
+PROCEDURE crpt
+ PARAMETERS nr=INTEGER inst=string
+ RESULT out
+ LOCAL string
+ IF called_as_function()
+  string="/.:/servers/"+inst+"_dae"
+  printin string
+  out=get(nr,string)
+ ELSE
+  set/file "/.:/"
+ ENDIF
+ENDPROCEDURE
+
+PROCEDURE dae
+ PARAMETERS inst=string
+ RESULT out
+ GLOBAL instrument_name
+ LOCAL string
+ IF NOT defined(inst)
+   inst = instrument_name
+ ENDIF
+  string="/.:/servers/"+inst+"_dae"
+  set/file string
+ENDPROCEDURE
+
+PROCEDURE jump2
+system "cr/t/wait"
+ENDPROCEDURE
+
+PROCEDURE pur
+system "pur"
+ENDPROCEDURE
+
+PROCEDURE check_device
+IF NOT DEVICE:STATUS()
+ sqwin
+ENDIF
+ENDPROCEDURE
+
+PROCEDURE check_device_newin
+IF NOT DEVICE:STATUS()
+ newin
+ENDIF
+ENDPROCEDURE
+
+PROCEDURE inquire_real
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+ w = inquire(inqstr)
+ EXITIF is_a(w,"real") OR is_a(w,"integer")
+ ENDLOOP
+ w = w * 1.0
+ENDPROCEDURE
+
+PROCEDURE inquire_integer
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"real") OR is_a(w,"integer")
+ ENDLOOP
+ IF is_a(w, "real")
+  w = as_integer(w)
+ ENDIF
+ENDPROCEDURE
+
+PROCEDURE inquire_integer_null
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"real") OR is_a(w,"integer") OR (length(w)=0)
+ ENDLOOP
+ IF is_a(w, "real")
+  w = as_integer(w)
+ ENDIF
+ IF is_a(w, "string")
+  w = _
+ ENDIF
+ENDPROCEDURE
+
+PROCEDURE inquire_string
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"string") AND (length(w) > 0)
+ ENDLOOP
+ENDPROCEDURE
+
+PROCEDURE inquire_string_null
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"string")
+ ENDLOOP
+ENDPROCEDURE
+
+
+PROCEDURE setxlabel
+PARAMETERS win=WORKSPACE choice=INTEGER
+LOCAL xlabels
+xlabels = dimensions(11)
+xlabels[1] = "Channel Number"; xlabels[2] = "Time-of-Flight (\\gms)"
+xlabels[3] = "Wavelength (\\A)"; xlabels[4] = "d-Spacing (\\A)"
+xlabels[5] = "Energy (meV)"; xlabels[6] = "Momentum Transfer Q (\\A\\u-1\\d)"
+xlabels[7] = "Q\\u2\\d (\\A\\u-2\\d)"; xlabels[8] = "Reciprocal Velocity (\\gms/m)"
+xlabels[9] = "Energy Transfer \\gDE=E1-E2 (meV)"
+xlabels[10] = "Primary Flight-Path Wavelength \\gl\\d1\\u (\\A)"
+xlabels[11] = "Energy Transfer \\gDE=E1-E2 (cm\\u-1\\d)"
+
+IF (choice = _)
+printn ""
+printn " 1 = Channel"
+printn " 2 = Time-of-Flight"
+printn " 3 = Wavelength"
+printn " 4 = d-Spacing"
+printn " 5 = Energy"
+printn " 6 = Q"
+printn " 7 = Q^2"
+printn " 8 = Reciprocal Velocity"
+printn " 9 = E1-E2 (meV)"
+printn "10 = Primary Wavelength"
+printn "11 = E1-E2 (cm-1)"
+
+choice = inquire("Units ?")
+
+IF NOT IS_A(choice,"integer")
+ choice = as_integer(choice)
+ENDIF
+ENDIF
+  win.xlabel = xlabels[choice]
+  printin "Set x-label to "xlabels[choice]
+ENDPROCEDURE
+
+PROCEDURE setylabel
+PARAMETERS win=WORKSPACE choice=INTEGER
+LOCAL ylabels
+ylabels = dimensions(11)
+ylabels[1] = "(dimensionless)"
+
+IF (choice = _)
+printn ""
+printn " 1 = dimensionless"
+
+choice = inquire("Units ?")
+
+IF NOT IS_A(choice,"integer")
+ choice = as_integer(choice)
+ENDIF
+ENDIF
+  win.ylabel = ylabels[choice]
+  printin "Set y-label to "ylabels[choice]
+ENDPROCEDURE
+
+
+##################################################################
+# These routines are useful for reading/writing column ascii files
+# Stuart Campbell (April 1998)
+##################################################################
+
+PROCEDURE writexye
+ PARAMETERS W=workspace FILE=string 
+ LOCAL myfile
+  myfile=asciifile:open:new(file)
+  asciifile/writefree myfile _ "  " W.x W.y W.e
+  asciifile/close myfile
+ENDPROCEDURE
+
+PROCEDURE writexy
+ PARAMETERS W=workspace FILE=string 
+ LOCAL myfile
+  myfile=asciifile:open:new(file)
+  asciifile/writefree myfile _ "  " W.x W.y 
+  asciifile/close myfile
+ENDPROCEDURE
+
+PROCEDURE readxy
+ PARAMETERS FILE=string
+ RESULT res
+ LOCAL myfile
+  myfile = asciifile:open(file,comment="#")
+  asciifile/readfree myfile "X,Y" count=-1
+  res = asciifile:data(myfile)
+  asciifile/close myfile
+  res.file=file
+ENDPROCEDURE
+
+PROCEDURE readxye
+ PARAMETERS FILE=string
+ RESULT res
+ LOCAL myfile
+  myfile = asciifile:open(file,comment="#")
+  asciifile/readfree myfile "X,Y,E" count=-1
+  res = asciifile:data(myfile)
+  asciifile/close myfile
+  res.file=file
+ENDPROCEDURE
+
+PROCEDURE readnxye
+ PARAMETERS FILE=string
+ RESULT res
+ LOCAL myfile
+  myfile = asciifile:open(file,comment="#")
+  asciifile/readfree myfile "N,X,Y,E" count=-1
+  res = asciifile:data(myfile)
+  asciifile/close myfile
+  res.file=file
+ENDPROCEDURE
+
+##################################################################
+# Routine to plot all the elements of a workspace array 
+# Stuart Campbell (June 1999)
+##################################################################
+
+PROCEDURE plotall
+PARAMETERS win xmin xmax ymin ymax
+LOCAL n                        
+n=length(win)
+IF (n=0) OR (n=1); display win; RETURN; ENDIF
+display win[1] xmin xmax ymin ymax
+LOOP i FROM 2 TO n
+alter/plotcolour convert_to_symbol(as_string(i))
+plot win[i]
+ENDLOOP
+win_unscaled 0.845 0.94 0.1292 0.6825
+draw/box 0.1 0. 1. 1.
+LOOP i FROM 1 TO n
+ text/draw 0.5 1.0-(i*0.9/n) as_string(i) &
+	colour=convert_to_symbol(as_string(i))
+ENDLOOP
+ENDPROCEDURE
+
+# Routine to calculate the average of a given array variable
+# SIC
+PROCEDURE average
+PARAMETERS p1=REALARRAY
+RESULT res
+ res = sum(p1)/length(p1)
+ENDPROCEDURE

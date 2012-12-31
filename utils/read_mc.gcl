@@ -1,0 +1,22 @@
+PROCEDURE read_mc
+PARAMETERS filename=string
+RESULT wres
+LOCAL res num
+ wres=fields()
+ wres.file=filename
+ module/load "/usr/users/sic01/opengenie/read_mclib.so"
+ res=module:execute("get_mc_dat", wres)
+ num=inquire("Data set to display")
+ res.x = cut(res.time1, 1, 1)
+ res.y = cut(res.data1, 1, num)
+ res.e = cut(res.stddev1, 1, num)
+
+ res.time="N/A"
+ res.inst_name="MCLIB"
+ res.spec_no=as_string(num)
+ res.run_no=res.detnames[num]
+ res.user_name="MCLIB" 
+
+ wres=res
+
+ENDPROCEDURE

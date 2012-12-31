@@ -1,0 +1,6 @@
+# Stuart Campbell (Oct 1998)
+PROCEDURE clear
+PARAMETERS work=WORKSPACE
+ fill work.y 0.0
+ fill work.e 0.0
+ENDPROCEDURE

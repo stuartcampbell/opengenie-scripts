@@ -1,0 +1,18 @@
+#
+# Stuart Campbell (July 1999)
+#
+PROCEDURE zero
+PARAMETERS w
+RESULT res
+
+ IF (w.e=_); printen "There is no error field in this workspace!"; 
+ RETURN; ENDIF
+
+ IF called_as_function()
+  res = w
+  fill res.e 0.0
+ ELSE
+  fill w.e 0.0
+ ENDIF
+
+ENDPROCEDURE

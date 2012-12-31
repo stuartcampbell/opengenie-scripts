@@ -1,0 +1,19 @@
+PROCEDURE EVSASCII
+LOCAL out W low high nsp d file h v
+file=INQUIRE("GENIE-II saved file")
+low=INQUIRE("Number of first block")
+high=INQUIRE("Number of last block")
+out=inquire("ASCII output file name")
+set/file file
+nsp=high-low+1
+%( gXw _ Array new: gXnsp )%
+LOOP I FROM 2 TO NSP+1
+    D <~ GET(I-2+low)
+    %( gXw at: gXi put: (gXd at: #gXy ) )%
+ENDLOOP
+v <~ centre_bins(d.x)
+%( gXw at: 1 put: gXv )%
+h=asciifile:open:new(out)
+asciifile/writefree h _ "," gvarray=w 
+asciifile/close h
+ENDPROCEDURE

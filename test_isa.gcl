@@ -1,0 +1,34 @@
+PROCEDURE test_isa
+
+ LOCAL a i start taken1 taken2
+ LOCAL n=10000
+
+ printin "Doing a loop of " as_string(n) " IS_A()'s"
+
+  start = now:millisec()
+
+  LOOP i FROM 1 TO n
+     IS_A a "Integer"	    
+  ENDLOOP
+
+  taken1 = now:millisec() - start
+
+  printin "Time Taken : " (taken1)/1000.0 " Seconds"
+
+   printin "Doing a loop of " as_string(n) " isKindOf:"
+
+  start = now:millisec()
+
+  LOOP i FROM 1 TO n
+%(     
+	(gXa isKindOf: Integer)	    
+)%
+  ENDLOOP
+
+  taken2 = now:millisec() - start
+
+  printin "Time Taken : " (taken2)/1000.0 " Seconds"
+
+  printin "Smalltalk is " taken1/taken2 " times faster!"
+
+ENDPROCEDURE

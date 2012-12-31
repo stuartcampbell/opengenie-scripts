@@ -1,0 +1,11 @@
+PROCEDURE progs
+ print "\n"
+ printin " CON     - Conversion of X-scale from meV to cm-1"
+ printin " QREHACK - Conversion of tof data to energy transfer to look"
+ printin "           at spectrum during acquisition"
+ printin " LPR     - Screen capture and print "
+ printin " TP/TPC  - Temperature plotting of current or old data"
+ printin " ZERO    - Sets all error values in a workspace to zero"
+
+# printin " B2A     - Converts binary files into ASCII"
+ENDPROCEDURE 

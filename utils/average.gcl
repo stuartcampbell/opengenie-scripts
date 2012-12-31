@@ -1,0 +1,6 @@
+PROCEDURE average
+PARAMETERS p1=REALARRAY
+RESULT res
+ res = sum(p1)/length(p1)
+ENDPROCEDURE
+

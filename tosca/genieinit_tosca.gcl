@@ -1,0 +1,52 @@
+# TOSCA Startup file for OpenGENIE              
+# S I Campbell 27/7/99
+
+toggle/info/off
+
+# debug/on
+
+PROCEDURE loadall
+LOCAL srcDir initDir
+
+ srcDir = "user$disk:[sic.opengenie.tosca]"
+ initDir= "user$disk:[sic.opengenie.init]"
+
+IF os() = "WINNT"	
+	srcDir = ""
+	initDir = ""
+ENDIF
+
+INCLUDE initDir + "alias.gcl"
+INCLUDE initDir + "sic_useful.gcl"
+
+INCLUDE srcDir + "wexm.gcl"
+INCLUDE srcDir + "file_io.gcl"
+INCLUDE srcDir + "clear.gcl"
+INCLUDE srcDir + "convert.gcl"
+INCLUDE srcDir + "zero_errors.gcl"
+INCLUDE srcDir + "stretch.gcl"
+INCLUDE srcDir + "qtemp.gcl"
+INCLUDE srcDir + "laser_plots.gcl"
+INCLUDE srcDir + "loadlog.gcl"
+INCLUDE srcDir + "temp_plot.gcl"
+INCLUDE srcDir + "progs.gcl"
+
+#alias "tplot" "tp"
+#alias "tplotc" "tp:c"
+
+ENDPROCEDURE
+
+PROCEDURE dae
+  set/file "/.:/servers/tosca_dae"
+ENDPROCEDURE
+
+toggle/info/on
+
+ set/inst "TSC"
+ set/ext  "RAW"
+ set/disk "TOSCA$DISK0:"
+ set/dir  "[TSCMGR.DATA]"
+
+ loadall
+ progs
+

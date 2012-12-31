@@ -1,0 +1,35 @@
+# written by Stuart Campbell (RAL) on 27/7/98
+#
+
+ PROCEDURE tf_file
+ 
+ PARAMETERS work=workspace
+
+ LOCAL tmp filename
+
+  tmp = fields()
+                   
+  printin "Run number is  :" work.run_no
+  printin "Title          :" work.title
+
+  printin "Polaris "work.bank"-bank : L = "work.l1+work.l2"m : 2theta = &
+          "work.twotheta " degrees"
+  printin "Time-of-flight range :"work.x[1]" usec to "work.x[work.ntc] &
+	    " usec"
+
+  filename = inquire("Enter data filename (without extension) ")
+  
+  tmp.tmin = inquire("Enter minimum t.o.f limit (usec) ")
+  tmp.tmax = inquire("Enter maximum t.o.f limit (usec) ")
+
+
+  tmp.filename = as_string(filename)+".dat"
+
+  tmp.x = work.x
+  tmp.y = work.y
+  tmp.e = work.e
+  tmp.ntc = work.ntc
+
+  module/execute "filegen" tmp
+ 
+ ENDPROCEDURE

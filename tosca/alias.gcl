@@ -1,0 +1,20 @@
+# Defining some useful aliases
+# Stuart Campbell (March 2000)
+
+alias "m" "multiplot"
+alias "ass" "assign"
+alias "d/h/l/m/e" "display/histogram/line/markers/errors"
+alias "p/h/l/m/e" "plot/histogram/line/markers/errors"
+alias "l" "limits"
+alias "a/b/d/f/h/lc/lt/lw/m/ms/p/pc/s/th/tc/stat" &
+      "alter/binning/device/font/hardcopy/linecolour/linetype/linewidth/markers/markersize/plot/plotcolour/size/textheight/textcolour/status"
+alias "k/h" "hardcopy/dummy"
+alias "t/h/g/c/i/stat" "toggle/header/graticule/clear/info/status"
+alias "c/h/v" "cursor/horizontal/vertical"
+alias "sh" "show"
+alias "sho" "show"
+alias "ex" "exit"
+alias "reb" "rebin"
+alias "u/l" "units/lam"
+alias "j" "jump"
+alias "z/h/l/m/e" "zoom/histogram/line/markers/errors"

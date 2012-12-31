@@ -1,0 +1,30 @@
+PROCEDURE show_camac
+PARAMETERS index=INTEGER
+ LOCAL nse j se cse camac rse
+ 
+ IF (index=_)
+  index = inquire("Block:") 
+ ENDIF
+
+ ASSIGN $dae
+
+ nse <~ GET("NSEP")
+
+ LOOP i FROM 1 TO nse
+   IF (i < 10)
+     J = "SE0" + AS_STRING(i)
+   ELSE
+     J = "SE" + AS_STRING(i)
+   ENDIF
+
+   SE <~ GET(J)
+   CSE <~ GET("C" + J)
+   RSE <~ GET("R" + J)
+   CAMAC = CSE[1] + CSE[2] 
+   PRINTN AS_STRING(CAMAC) + "\t" + AS_STRING(SE[(index)]) + & 
+	"\t" + AS_STRING(RSE[(index)]) + "\t" + AS_STRING(CSE[(index)])
+
+ ENDLOOP
+
+ENDPROCEDURE
+
