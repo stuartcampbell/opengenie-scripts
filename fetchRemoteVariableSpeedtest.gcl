@@ -1,0 +1,8 @@
+# Tests how long it takes to fetch a remote variable from
+# the 'control' version of opengenie running on the Control PC
+# to an instance of opengenie running on the analysis PC.
+
+h=_create_dcomgenie("ndxenginx")
+dcom/call h "AssignHandle" "" "$cnt1 <~ __crpt.cnt1" ""
+printin now(); p <~ _get_remote_var(h, "$cnt1"); printin now()
+
