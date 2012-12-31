@@ -1,0 +1,213 @@
+# include "user$disk:[sic.opengenie.init]alias.gcl"
+
+ INCLUDE "user$disk:[sic.opengenie.init]sic_useful.gcl"
+# INCLUDE "user$disk:[sic.opengenie.utils]loadlog.gcl"
+# include "user$disk:[sic.opengenie.utils]readsqw.gcl"
+# include "user$disk:[sic.opengenie.utils]readinx.gcl"
+# include "user$disk:[sic.opengenie.utils]fwhm.gcl"
+
+ PROCEDURE OS_SAFE
+  LOCAL OPERATING_SYSTEM
+  LOCAL INIT_DIR UTILS_DIR
+
+    OPERATING_SYSTEM = OS()
+
+  CASE (OPERATING_SYSTEM)
+  IS "VMS"
+    INIT_DIR  = "USER$DISK:[SIC.OPENGENIE.INIT]"
+    UTILS_DIR = "USER$DISK:[SIC.OPENGENIE.UTILS]"
+  IS "OSF" OR "LINUX"
+    PRINTIN "HOST IS A UNIX (OSF/LINUX) MACHINE"
+    INIT_DIR  = "/vax/users/sic/opengenie/init/"
+    UTILS_DIR = "/vax/users/sic/opengenie/utils/" 
+  ENDCASE
+
+ INCLUDE INIT_DIR+"sic_useful.gcl"
+ INCLUDE UTILS_DIR+"loadlog.gcl"
+ INCLUDE UTILS_DIR+"readsqw.gcl"
+ INCLUDE UTILS_DIR+"readinx.gcl"
+ INCLUDE UTILS_DIR+"fwhm.gcl"
+# INCLUDE "user$disk:[sic.opengenie.gsas]gsasgen.gcl"
+
+ ENDPROCEDURE
+
+PROCEDURE fit
+ INCLUDE "user$disk:[sic.opengenie.utils]fit.gcl"
+ INCLUDE "user$disk:[sic.opengenie.utils]many_peak.gcl"
+ENDPROCEDURE
+
+
+PROCEDURE ELEMENTS
+PARAMETERS N=INTEGER
+IF DEFINED(N)
+  _array_elements_to_print = N
+ELSE
+  _array_elements_to_print = _
+ENDIF
+ENDPROCEDURE
+
+
+##################################################################
+# Leonardo Stuff
+##################################################################
+
+ PROCEDURE init_canvas
+  INCLUDE "user$disk:[sic.opengenie.canvas]canvas.gcl"
+#  init_canvas/reload
+ ENDPROCEDURE
+
+ PROCEDURE init_leonardo
+ QUALIFIERS /TRYFAN
+
+ IF (TRYFAN)
+  INCLUDE "axplib$disk:[sic01.genie.leonardo]init_leonardo.gcl"
+  init_leonardo/tryfan
+ ELSE
+#  load "axplib$disk:[sic01.genie.leonardo]init_leonardo.gcl"
+  INCLUDE "user$disk:[sic01.opengenie.leonardo]init_leonardo.gcl"
+  init_leonardo
+ ENDIF 
+
+ ENDPROCEDURE
+
+##################################################################
+# Shortcuts to define the correct defaults for various instruments
+##################################################################
+
+PROCEDURE osiris_setup
+QUALIFIERS /FEM
+GLOBAL instrument_name
+ instrument_name = "osiris"
+ set/inst "osi"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "osiris_data:"
+	set/dir ""
+  IF (fem)
+	INCLUDE "osiris$disk0:[osiris]genieinit.gcl"
+#	INCLUDE "user$disk:[sic01.opengenie.osiris]osd.gcl"
+  ENDIF
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE iris_setup
+GLOBAL instrument_name
+ instrument_name = "iris"
+ set/inst "irs"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "iris_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE het_setup
+GLOBAL instrument_name
+ instrument_name = "het"
+ set/inst "het"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "het_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE mari_setup
+GLOBAL instrument_name
+ instrument_name = "mari"
+ set/inst "mar"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "mari_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE tfxa_setup
+ set/inst "tfx"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "tosca_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE tosca_setup
+GLOBAL instrument_name
+ instrument_name = "tosca"
+ set/inst "tsc"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "tosca_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE loq_setup
+GLOBAL instrument_name
+ instrument_name = "loq"
+ set/inst "loq"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "loq_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE maps_setup
+GLOBAL instrument_name
+ instrument_name = "maps"
+ set/inst "map"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "maps_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE evs_setup
+GLOBAL instrument_name
+ instrument_name = "evs"
+ set/inst "evs"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "evs_data:"
+	set/dir ""
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE pearl_setup
+GLOBAL instrument_name
+ instrument_name = "pearl"
+ set/inst "prl"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "pearl$disk0:"
+	set/dir "[prlmgr.data]"
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE gem_setup
+GLOBAL instrument_name
+ instrument_name = "gem"
+ set/inst "gem"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "gem_data:"
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE polaris_setup
+GLOBAL instrument_name
+ instrument_name = "pol"
+ set/inst "pol"
+ set/ext "raw"
+  IF os()="VMS"
+	set/disk "pol_data:"
+  ENDIF
+ INCLUDE "axplib$disk:[sic01.genie.polaris]polfocus.gcl"
+ENDPROCEDURE
+
+
+OS_SAFE
+
