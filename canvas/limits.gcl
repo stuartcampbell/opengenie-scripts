@@ -1,0 +1,96 @@
+PROCEDURE limits
+QUALIFIERS /SHOW /AUTO /X /Y
+PARAMETERS p1=REAL p2=REAL p3=REAL p4=REAL
+GLOBAL _cv_limits
+
+ IF (SHOW)
+  printin " X-RANGE : "_cv_limits[1]" to "_cv_limits[2]
+  printin " Y-RANGE : "_cv_limits[3]" to "_cv_limits[4]
+ RETURN
+ ENDIF
+
+ IF (AUTO)
+  IF (X)
+   _cv_limits[1] = _
+   _cv_limits[2] = _
+   _cv_limits[1] = -666.e6
+   _cv_limits[2] = -666.e6
+   unfix _cv_limits -666.e6
+   RETURN
+  ENDIF
+  IF (Y)
+   _cv_limits[3] = _
+   _cv_limits[4] = _
+   _cv_limits[3] = -666.e6
+   _cv_limits[4] = -666.e6
+   unfix _cv_limits -666.e6
+   RETURN
+  ENDIF
+   _cv_limits[1] = _
+   _cv_limits[2] = _
+   _cv_limits[3] = _
+   _cv_limits[4] = _
+   _cv_limits[1] = -666.e6
+   _cv_limits[2] = -666.e6
+   _cv_limits[3] = -666.e6
+   _cv_limits[4] = -666.e6
+   unfix _cv_limits -666.e6
+   RETURN
+ ENDIF
+
+ IF (X)
+  IF DEFINED(p1)
+   _cv_limits[1] = p1
+  ENDIF
+  IF DEFINED(p2)
+   _cv_limits[2] = p2
+  ENDIF
+  RETURN
+ ENDIF
+
+ IF (Y)
+  IF DEFINED(p1)
+   _cv_limits[3] = p1
+  ENDIF
+  IF DEFINED(p2)
+   _cv_limits[4] = p2
+  ENDIF
+  RETURN
+ ENDIF
+
+  IF DEFINED(p1)
+   _cv_limits[1] = p1
+  ENDIF
+  IF DEFINED(p2)
+   _cv_limits[2] = p2
+  ENDIF
+  IF DEFINED(p3)
+   _cv_limits[3] = p3
+  ENDIF
+  IF DEFINED(p4)
+   _cv_limits[4] = p4
+  ENDIF
+
+ENDPROCEDURE
+
+PROCEDURE check_display_limits
+ PARAMETERS x1=REAL x2=REAL y1=REAL y2=REAL
+ GLOBAL _cv_limits
+
+  IF (_cv_limits[1]=_)
+   _cv_limits[1]=x1
+  ENDIF
+
+  IF (_cv_limits[2]=_)
+   _cv_limits[2]=x2
+  ENDIF
+
+  IF (_cv_limits[3]=_) 
+   _cv_limits[3]=y1
+  ENDIF
+
+  IF (_cv_limits[4]=_)
+   _cv_limits[4]=y2
+  ENDIF
+ENDPROCEDURE
+

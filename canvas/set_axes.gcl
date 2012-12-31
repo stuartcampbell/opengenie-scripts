@@ -1,0 +1,24 @@
+PROCEDURE set_axes
+ PARAMETERS data=WORKSPACE
+    
+  printn "\n"
+
+  IF NOT DEFINED(data)
+   printen "No valid workspace defined"
+   RETURN
+  ENDIF
+
+  printn " 1 - Qx"
+  printn " 2 - Qy"
+  printn " 3 - Qz"
+  printn " 4 - Energy"
+  printn " 5 - |Q|"
+  printn " 6 - 2.072*|Q|^2"
+  printn " 7 - Detector Angle"
+
+  data.axes[1] = inquire_integer("Enter option (1-7) for x-axis")
+  data.axes[2] = inquire_integer("Enter option (1-7) for y-axis")
+
+  limits/auto
+
+ENDPROCEDURE

@@ -1,0 +1,83 @@
+PROCEDURE add_line
+ PARAMETERS new_line
+ GLOBAL cv_x  cv_y  cv_error cv_number  cv_index  cv_colour &
+ 	  cv_symbol cv_err_flag cv_x_title cv_abs
+ LOCAL max_number size dims dims2
+ LOCAL tmp1 tmp2 tmp3 tmp4 tmp5 tmp6 tmp7 tmp8 tmp9 tmp10
+
+ max_number = max(cv_index)
+ size = length(new_line.x_cut)
+
+ dims = dimensionality(cv_x)
+
+ tmp1=dimensions(dims)
+ tmp2=dimensions(dims)
+ tmp3=dimensions(dims)
+ tmp4=dimensions(dims)
+ tmp5=dimensions(dims)
+ tmp6=dimensions(dims)
+ tmp7=dimensions(dims)
+ tmp8=dimensions(dims)
+ tmp9=dimensions(dims)
+ tmp10=dimensions(dims)
+
+ tmp1 = cv_x
+ cv_x = dimensions(dims+1)
+ cv_x[dims+1] = new_line.x_cut
+
+ tmp2 = cv_y
+ cv_y = dimensions(dims+1)
+ cv_y[dims+1] = new_line.y_cut
+
+ tmp3 = cv_error
+ cv_error = dimensions(dims+1)
+ cv_error[dims+1] = new_line.err
+
+ tmp4 = cv_number
+ dims2=length(cv_number)
+ cv_number = dimensions(dims2+size)
+
+ LOOP i FROM 1 TO dims2
+  cv_number[i] = tmp4[i]
+ ENDLOOP
+ LOOP i FROM dims2+1 TO dims2+size
+  cv_number[i] = max_number+1
+ ENDLOOP
+
+ tmp5 = cv_index
+ cv_index = dimensions(dims+1)
+ cv_index[dims+1] = max_number+1
+
+ tmp6 = cv_colour
+ cv_colour = dimensions(dims+1)
+ cv_colour[dims+1] = 155
+
+ tmp7 = cv_symbol
+ cv_symbol = dimensions(dims+1)
+ cv_symbol[dims+1] = -4
+
+ tmp8 = cv_err_flag
+ cv_err_flag = dimensions(dims+1)
+ cv_err_flag[dims+1] = 1
+
+ tmp9 = cv_x_title
+ cv_x_title = dimensions(dims+1)
+ cv_x_title[dims+1] = new_line.x_title
+ tmp10 = cv_abs
+ cv_abs = dimensions(dims+1)
+ cv_abs[dims+1] = "q"
+
+
+ LOOP i FROM 1 TO dims
+  cv_x[i] = tmp1[i]
+  cv_y[i] = tmp2[i]
+  cv_error[i] = tmp3[i]
+  cv_index[i] = tmp5[i]
+  cv_colour[i] = tmp6[i]
+  cv_symbol[i] = tmp7[i]
+  cv_err_flag[i] = tmp8[i]
+  cv_x_title[i] = tmp9[i]
+  cv_abs[i] = tmp10[i]
+ ENDLOOP
+
+ENDPROCEDURE

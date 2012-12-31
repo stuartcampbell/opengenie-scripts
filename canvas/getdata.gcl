@@ -1,0 +1,152 @@
+PROCEDURE get_filename      
+ PARAMETERS cmd_string=STRING
+ RESULT output_string
+ LOCAL input_string
+
+  input_string = inquire(cmd_string)
+ 
+  IF (input_string = "$")
+   IF (OS()="VMS")
+    system "create/term/wait" 
+   ENDIF
+   output_string=inquire(cmd_string)
+  ELSE
+   output_string = input_string
+  ENDIF
+
+ENDPROCEDURE 
+
+
+PROCEDURE getdata
+ PARAMETERS par=STRING run ei=REAL psi=REAL
+ RESULT res
+
+ GLOBAL src_dir _cv_limits
+ LOCAL par_file spe_file ei psi num_p a b tmp
+ LOCAL safe_disk safe_dir safe_ext
+
+ printn "\n"
+
+ IF (run = _)
+  spe_file=get_filename("Enter .SPE filename")
+  IF length(spe_file) = 0
+   printen "No .SPE file selected"
+   RETURN
+  ENDIF
+ ELSE
+  IF IS_A(run,"string")
+   spe_file = as_string(run)
+  ELSE
+   safe_disk = _current_disk
+   safe_dir = _current_directory
+   safe_ext = _current_extension
+   set/disk "sys$scratch:"
+   set/dir ""
+   set/ext "spe"
+   IF IS_A(run, "integer")
+    spe_file=cfn(run)
+   ELSE
+    spe_file=cfn(as_integer(run))
+   ENDIF
+   set/disk safe_disk
+   set/dir safe_dir
+   set/ext safe_ext
+  ENDIF
+ ENDIF
+
+ IF (par = _)
+  par_file=get_filename("Enter .PAR filename")
+  IF length(par_file) = 0
+   printen "No .PAR file selected"
+   RETURN
+  ENDIF
+ ELSE
+  par_file = as_string(par)
+ ENDIF
+
+ IF (ei = _) OR (ei = 0.0)
+	ei=INQUIRE("Please input value for incident neutron energy")
+	ei=ei*1.0
+      printin "Using an incident energy of "+as_string(ei)
+ ENDIF
+
+ IF (psi = _) 
+	psi = 0.0
+ ENDIF
+
+ res = fields()
+ res.x_title = "xtitle"
+ res.y_title = "ytitle"
+ res.title = "title"
+ res.colours = "rainbow"
+ res.p1 = dimensions(3)
+ fill res.p1 0
+ res.p2 = dimensions(3)
+ fill res.p2 0
+ res.p3 = dimensions(3)
+ fill res.p3 0
+ res.p4 = dimensions(3)
+ fill res.p4 0.0
+ res.mode = 0
+ res.aspect = 1.0
+ res.type = 2
+ res.axes = dimensions(3)
+ fill res.axes 1 1
+ res.scale = dimensions(3)
+ fill res.scale 1.0
+ res.zlimits = dimensions(2)
+ fill res.zlimits 0.0 10.0
+
+ res.file = spe_file
+ res.par_file = par_file
+ res.ei = ei
+ res.psi = psi
+
+## Read in SPE file
+
+ a = fields()
+ a.file = res.file 
+ module/load src_dir+"getrun_3d.so"
+ print "\n"
+ a <~ module:execute("GETRUN_3D", a) 
+ module/unload src_dir+"getrun_3d.so"
+
+ IF (a.stat!=0)
+  printen "Error opening SPE file"
+  RETURN
+ ENDIF
+
+ res.num_e <~ a.num_e 
+ res.num_p <~ a.num_p 
+ res.intensity <~ a.intensity
+ res.error <~ a.error
+ res.energy <~ a.energy
+
+ printin "Number of Energy points : "res.num_e
+ printin "Number of Angle points  : "res.num_p
+
+## Read in PAR file 
+
+ b = fields()
+ b.par_file = par_file
+ b.num_p = res.num_p
+ module/load src_dir+"getpar_3d.so"
+ print "\n"
+ b <~ module:execute("GETPAR_3D", b)
+ module/unload src_dir+"getpar_3d.so"
+ 
+ IF (b.stat!=0)
+  printen "Error opening PAR file"
+  RETURN
+ ENDIF
+
+ res.dist <~ b.dist
+ res.phi <~ b.phi
+ res.theta <~ b.theta
+ res.width <~ b.width
+ res.height <~ b.height
+
+ mode res 9
+
+
+ENDPROCEDURE

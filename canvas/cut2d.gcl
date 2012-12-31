@@ -1,0 +1,91 @@
+PROCEDURE cut2d
+ QUALIFIERS /CURSOR
+ PARAMETERS data=WORKSPACE x1=REAL y1=REAL x2=REAL y2=REAL binx=REAL biny=REAL
+ RESULT res
+ GLOBAL axis_one axis_two one_win two_win
+ LOCAL x1 y1 x2 y2 binx biny q r width tmp
+
+ IF NOT DEFINED(check_canvas_workspace:twod(data))
+  printen "Invalid workspace specified"
+  RETURN
+ ENDIF
+
+  IF called_as_function()
+
+  printn "\n"
+
+  q=dimensions(2)
+  r=dimensions(2)
+
+  IF (CURSOR)
+  display data
+  printin "Click Left for a vertical cut or Right for a horizontal cut"
+   tmp = getcursor(0.5,0.5)
+
+# Left mouse button pressed --> vertical
+	IF (tmp.char = "A")
+       x1 = tmp.w_x
+       x2 = tmp.w_x
+	 y1 = min(data.centre_y)
+	 y2 = max(data.centre_y)
+       biny = inquire_real("Enter bin size along cut")
+       binx = inquire_real("Enter width of cut")
+      ENDIF
+# Right mouse button pressed --> horizontal
+	IF (tmp.char = "D") OR (tmp.char = "X")
+       y1 = tmp.w_y
+       y2 = tmp.w_y
+	 x1 = min(data.centre_x)
+	 x2 = max(data.centre_x)
+       binx = inquire_real("Enter bin size along cut")
+       biny = inquire_real("Enter width of cut")
+      ENDIF
+   
+  ENDIF
+
+   q[1] = x1
+   q[2] = y1
+   r[1] = x2
+   r[2] = y2
+           
+  res = cut(data, q, r, binx, biny)
+
+#  IF (min(res.y) > -1.0e20)
+#   printin "replacing values"
+#   unfix res.y min(res.y)
+#   fix res.y 0.0
+#  ENDIF
+
+ IF (abs(x2-x1)<0.001)
+ select two_win
+ width = binx
+ line/draw xstart=x1 xend=x2 ystart=y1 yend=y2
+ line/draw ystart=y1 yend=y1 xstart=x1-width/2. &
+	     xend=x1+width/2. line_type=$dash   
+ line/draw ystart=y2 yend=y2 xstart=x1-width/2. &
+           xend=x1+width/2. line_type=$dash    
+ line/draw ystart=y1 yend=y2 xstart=x1+width/2. &
+           xend=x1+width/2. line_type=$dash  
+ line/draw ystart=y1 yend=y2 xstart=x1-width/2. &
+           xend=x1-width/2. line_type=$dash   
+ ENDIF
+
+ IF (abs(y2-y1)<0.001)
+ select two_win
+ width = biny
+ line/draw xstart=x1 xend=x2 ystart=y1 yend=y2 
+ line/draw xstart=x1 xend=x1 ystart=y1-width/2. &
+	     yend=y1+width/2. line_type=$dash   
+ line/draw xstart=x2 xend=x2 ystart=y1-width/2. &
+           yend=y1+width/2. line_type=$dash    
+ line/draw xstart=x1 xend=x2 ystart=y1+width/2. &
+           yend=y1+width/2. line_type=$dash  
+ line/draw xstart=x1 xend=x2 ystart=y1-width/2. &
+           yend=y1-width/2. line_type=$dash   
+ ENDIF
+
+  ELSE
+   printen "CUT2D - Please call as a function"
+  ENDIF
+
+ENDPROCEDURE

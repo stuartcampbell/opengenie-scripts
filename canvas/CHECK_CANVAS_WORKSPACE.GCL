@@ -1,0 +1,25 @@
+ PROCEDURE check_canvas_workspace
+  QUALIFIERS /TWOD /ONED
+  PARAMETERS data
+  RESULT output
+  LOCAL tmp
+
+  IF (TWOD)
+   IF NOT DEFINED(data.intensity); RETURN; ENDIF
+   IF NOT DEFINED(data.type); RETURN; ENDIF
+   IF NOT DEFINED(data.height); RETURN; ENDIF
+   IF NOT DEFINED(data.energy); RETURN; ENDIF
+   IF NOT DEFINED(data.dist); RETURN; ENDIF
+   IF NOT DEFINED(data.zlimits); RETURN; ENDIF
+   IF NOT DEFINED(data.axes); RETURN; ENDIF
+   IF NOT DEFINED(data.colours); RETURN; ENDIF
+   output = 1
+  ENDIF
+  IF (ONED)
+   IF NOT DEFINED(data.x); RETURN; ENDIF
+   IF NOT DEFINED(data.y); RETURN; ENDIF
+   IF NOT DEFINED(data.e); RETURN; ENDIF
+   output = 1
+  ENDIF
+
+ENDPROCEDURE

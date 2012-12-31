@@ -1,0 +1,16 @@
+PROCEDURE clear_line
+ GLOBAL cv_x cv_y cv_error cv_number cv_index cv_colour cv_symbol &
+       cv_err_flag cv_x_title cv_abs
+
+ free "cv_x"
+ free "cv_y"
+ free "cv_error"
+ free "cv_number"
+ free "cv_index"
+ free "cv_colour"
+ free "cv_symbol"
+ free "cv_err_flag"
+ free "cv_x_title"
+ free "cv_abs"
+
+ENDPROCEDURE

@@ -1,0 +1,177 @@
+ PROCEDURE size2d
+  QUALIFIERS /SHOW
+  PARAMETERS wx=REAL wy=REAL
+
+  GLOBAL wx_1d_size wy_1d_size wx_2d_size wy_2d_size
+  GLOBAL axis_one axis_two one_win two_win _sic_devtype
+
+   printn "\n"
+
+   IF (SHOW)
+    printin "Current x-dimension : " wx_2d_size
+    printin "Current y-dimension : " wy_2d_size
+   RETURN
+   ENDIF
+
+   IF NOT DEFINED(two_win)
+    printen " CANVAS - plotting window is not active "
+    RETURN
+   ENDIF
+
+   IF NOT DEFINED(wx)
+    wx = inquire_real("New x-dimension : ")
+    wy = inquire_real("New y-dimension : ")
+   ENDIF
+
+   IF NOT DEFINED(wy)
+    wy = wx
+   ENDIF
+
+#   printin " Resizing 2d plotting window from " 
+
+   wx_2d_size = wx
+   wy_2d_size = wy 
+
+   select two_win
+   device/close
+   two_win = device:open (_sic_devtype,wx_2d_size,wy_2d_size)
+   IF DEFINED(two_pic)
+   redraw two_pic
+   ENDIF
+
+ ENDPROCEDURE
+
+
+ PROCEDURE size1d
+  QUALIFIERS /SHOW
+  PARAMETERS wx=REAL wy=REAL
+
+  GLOBAL wx_1d_size wy_1d_size wx_2d_size wy_2d_size
+  GLOBAL axis_one axis_two one_win two_win _sic_devtype
+
+   printn "\n"
+
+   IF (SHOW)
+    printin "Current x-dimension : " wx_1d_size
+    printin "Current y-dimension : " wy_1d_size
+   RETURN
+   ENDIF
+
+   IF NOT DEFINED(one_win)
+    printen " CANVAS - plotting window is not active "
+    RETURN
+   ENDIF
+
+   IF NOT DEFINED(wx)
+    wx = inquire_real("New x-dimension : ")
+    wy = inquire_real("New y-dimension : ")
+   ENDIF
+
+   IF NOT DEFINED(wy)
+    wy = wx
+   ENDIF
+
+#   printin " Resizing 1d plotting window from " 
+
+   wx_1d_size = wx
+   wy_1d_size = wy 
+
+   select one_win
+   device/close
+   one_win = device:open (_sic_devtype,wx_1d_size,wy_1d_size)
+   IF DEFINED(one_pic)
+    redraw one_pic
+   ENDIF
+
+ ENDPROCEDURE
+
+ PROCEDURE HARD
+ PARAMETERS file=string
+ QUALIFIERS /BW
+ GLOBAL two_win two_pic wx_2d_size wy_2d_size
+
+   printn "\n"
+
+   IF (BW)
+    hardcopy file "ps" aspect=1.0
+   ELSE
+    hardcopy file "cps" aspect=1.0
+   ENDIF   
+   
+ ENDPROCEDURE
+                             
+PROCEDURE swap_axes
+PARAMETERS w=WORKSPACE
+
+LOCAL tmp
+
+   printn "\n"
+
+ IF NOT DEFINED(w)
+ printen "No valid workspace defined"
+ RETURN
+ ENDIF
+
+ tmp = w.axes[1]
+ w.axes[1] = w.axes[2]
+ w.axes[2] = tmp
+
+ENDPROCEDURE
+
+PROCEDURE check_device
+IF NOT DEVICE:STATUS()
+ sqwin
+ENDIF
+ENDPROCEDURE
+
+PROCEDURE inquire_real
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+ w = inquire(inqstr)
+ EXITIF is_a(w,"real") OR is_a(w,"integer")
+ ENDLOOP
+ w = w * 1.0
+ENDPROCEDURE
+
+PROCEDURE inquire_integer
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"real") OR is_a(w,"integer")
+ ENDLOOP
+ IF is_a(w, "real")
+  w = as_integer(w)
+ ENDIF
+ENDPROCEDURE
+
+PROCEDURE inquire_string
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"string") AND (length(w) > 0)
+ ENDLOOP
+ENDPROCEDURE
+
+PROCEDURE inquire_string_null
+PARAMETERS inqstr=STRING
+RESULT w
+ printn "\n"
+ LOOP
+  w = inquire(inqstr)
+  EXITIF is_a(w,"string")
+ ENDLOOP
+ENDPROCEDURE
+
+PROCEDURE newin
+	device/open "xw" 6.5 4.5
+ENDPROCEDURE
+
+PROCEDURE sqwin
+	device/open "xw" 5.0 5.0
+ENDPROCEDURE

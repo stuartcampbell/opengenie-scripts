@@ -1,0 +1,68 @@
+PROCEDURE graf
+ PARAMETERS line x1=REAL x2=REAL y1=REAL y2=REAL
+ QUALIFIERS /CLEAR /ERASE
+
+ GLOBAL axis_one axis_two one_win two_win
+ GLOBAL cv_x cv_y cv_error _sic_devtype
+ GLOBAL cv_number cv_index cv_colour cv_symbol cv_err_flag cv_x_title cv_abs
+
+ IF NOT DEFINED(check_canvas_workspace:oned(line))
+  printen "Invalid workspace specified"
+  RETURN
+ ENDIF
+
+  IF length(cv_index) = 0
+
+   IF NOT defined(line)
+    printen "ERROR: No data to plot"
+    RETURN
+   ENDIF 
+
+  IF(defined(one_win))
+   select one_win
+   device/clear
+  ELSE
+   printin "Opening 1D plotting window"
+   one_win = device:open(_sic_devtype,wx_1d_size,wy_1d_size)
+  ENDIF
+
+   cv_x = line.x_cut
+   cv_y = line.y_cut
+   cv_error = line.err
+   cv_number = 1
+   cv_index = 1
+   cv_colour = $red
+   cv_symbol = -4
+   cv_err_flag = 1
+   cv_x_title = line.x_title
+   cv_abs = "q"
+
+   graphit x1 x2 y1 y2
+
+  ELSE
+
+   IF NOT defined(line)
+
+    IF (CLEAR)
+     clear_line
+     select one_win
+     device/close
+     RETURN
+    ENDIF
+
+    IF (ERASE)
+#     remove_line
+     graphit x1 x2 y1 y2
+    ELSE
+     graphit x1 x2 y1 y2
+    ENDIF
+  
+  ELSE
+   add_line line
+   graphit x1 x2 y1 y2
+  ENDIF 
+
+ ENDIF
+
+ENDPROCEDURE
+

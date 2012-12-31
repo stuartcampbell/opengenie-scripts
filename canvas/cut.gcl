@@ -1,0 +1,96 @@
+PROCEDURE cut
+ PARAMETERS data x_value y_value del_x del_y
+ RESULT res
+
+ LOCAL limit
+ GLOBAL src_dir tmp 
+
+# IF called_as_function()
+
+  tmp =fields()
+  res = fields()
+
+  tmp = data
+  tmp.info = " "
+  tmp.flag = 0
+
+
+  CASE data.type
+   IS 3
+    printen " SORRY - Cuts through PSD doesn't work !!! "
+    RETURN
+   IS 2
+    
+    module/load src_dir+"pix2d.so"
+    tmp <~ module:execute("PIX2D_EXE", tmp)
+    module/unload "pix2d.so"
+
+    data.aspect=tmp.aspect
+
+    IF (tmp.flag = -1)
+	printen tmp.info
+    ENDIF
+
+    limit = tmp.num_e*tmp.num_p
+
+    redim tmp.x 5*limit    
+    redim tmp.y 5*limit    
+
+    tmp.x_value = x_value
+    tmp.y_value = y_value
+    tmp.del_x = del_x
+    tmp.del_y = del_y
+    tmp.axes = data.axes
+    tmp.mode = data.mode
+
+	printn "q = "tmp.x_value
+	printn "r = "tmp.y_value
+
+    module/load src_dir+"cut2d.so"
+    tmp <~ module:execute("CUT2D_EXE", tmp)
+    module/unload "cut2d.so"
+
+    IF (tmp.flag = -1)
+	printen tmp.info
+    ENDIF
+
+  ENDCASE
+
+ 	IF (tmp.size_x<0)
+	printen "CUT - size_x is < 0 ( "tmp.size_x" )"
+	RETURN
+	ENDIF
+
+    tmp.intensity = data.intensity
+    tmp.error = data.error
+
+    redim tmp.selectx data.num_p*data.num_e 
+    redim tmp.intensity data.num_p*data.num_e 
+    redim tmp.error data.num_p*data.num_e 
+
+	printn tmp.flag
+
+    module/load src_dir+"bin1d.so"
+    tmp <~ module:execute("BIN1D_EXE", tmp)
+    module/unload "bin1d.so"
+
+    IF (tmp.flag = -1)
+	printen tmp.info
+    ENDIF
+
+  res.x_title = annotate_cut(data, x_value, y_value)
+
+  res.x_cut = tmp.x
+  res.y_cut = tmp.int
+  res.err = tmp.err
+  res.count = tmp.count
+	
+	res.e = res.err
+	res.x = res.x_cut
+	res.y = res.y_cut
+		
+# ELSE
+#  printen "Incorrect calling syntax - please call as a function"
+# ENDIF
+     
+ENDPROCEDURE

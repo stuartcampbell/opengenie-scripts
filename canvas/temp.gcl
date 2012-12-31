@@ -1,0 +1,7 @@
+PROCEDURE loop
+LOOP i FROM 1 TO 100
+ printin i
+# system "show mem"
+ display a
+ENDLOOP
+ENDPROCEDURE

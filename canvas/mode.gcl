@@ -1,0 +1,54 @@
+PROCEDURE MODE
+PARAMETERS data m=INTEGER
+
+ printn "\n"
+
+ IF NOT DEFINED(check_canvas_workspace:twod(data))
+  printen "Invalid workspace defined"
+  RETURN
+ ENDIF
+
+ CASE m
+  IS 1
+#	data.axes=dimensions(2)
+	data.axes[1] = 3
+	data.axes[2] = 1
+  IS 2
+#	data.axes=dimensions(2)
+	data.axes[1] = 3
+	data.axes[2] = 2
+  IS 3
+#	data.axes=dimensions(2)
+	data.axes[1] = 1
+	data.axes[2] = 2
+  IS 4
+#	data.axes=dimensions(2)
+	data.axes[1] = 1
+	data.axes[2] = 4
+  IS 5
+#	data.axes=dimensions(2)
+	data.axes[1] = 2
+	data.axes[2] = 4
+  IS 6
+#	data.axes=dimensions(2)
+	data.axes[1] = 3
+	data.axes[2] = 4
+  IS 7
+#	data.axes=dimensions(2)
+	data.axes[1] = 5
+	data.axes[2] = 4
+  IS 8
+#	data.axes=dimensions(2)
+	data.axes[1] = 6
+	data.axes[2] = 4	
+  IS 9
+#	data.axes=dimensions(2)
+	data.axes[1] = 7
+	data.axes[2] = 4	
+  OTHERWISE
+      printen "Invalid mode selected"
+  ENDCASE
+
+  limits/auto
+
+ENDPROCEDURE

@@ -1,0 +1,52 @@
+PROCEDURE logo
+
+LOCAL string  tmp
+
+device/clear
+win_unscaled 0. 1. 0. 1.
+
+tmp = 0.1
+string = "\\(2053)\\(2151)\\(2164)\\(2172)\\(2151)\\(2169)"
+string = "\\(2553)\\(2651)\\(2664)\\(2672)\\(2651)\\(2669)"
+text/draw/centre 0.5 0.5+tmp string size=6.5 colour=$red
+string = "Data Visualisation for HET/MARI"
+text/draw/centre 0.5 0.39+tmp string size=2.0
+
+#string = "General Analysis Package for HET/MARI"
+#string = "Visualisation & Analysis Package"
+#string = "for HET/MARI"
+#text/draw/centre 0.5 0.35 string size=2.0
+#string = "Stuart Campbell & Christopher Frost"
+#string = "Stuart Campbell & Chris Frost"
+#string = "S. I. Campbell &  C. D. Frost"
+
+string = "Stuart Campbell"
+text/draw/centre 0.5 0.3+tmp string size=1.4 $orange font=$italic
+string = "&"
+text/draw/centre 0.5 0.25+tmp string size=1.4 $orange font=$italic
+string = "Christopher Frost"
+text/draw/centre 0.5 0.2+tmp string size=1.4 $orange font=$italic
+
+tmp = tmp - 0.1
+draw/box/filled 0.385 0.785-tmp 0.615 0.915-tmp $white
+draw/box/filled 0.39 0.79-tmp 0.61 0.91-tmp $black
+draw/box/filled 0.395 0.795-tmp 0.605 0.905-tmp $white
+draw/box/filled 0.4 0.8-tmp 0.6 0.9-tmp $black
+
+string = "ISIS"
+text/draw/centre 0.5 0.825-tmp string size=3.7 font=$roman
+
+tmp = 1.3
+string = "\\(2515)"
+text/draw 0.412 0.1 string $red size=tmp
+string = "\\(2616)\\(2605)\\(2614)"
+text/draw 0.437 0.1 string $blue size=tmp
+string = "\\(2507)"
+text/draw 0.5 0.1 string $red  size=tmp
+string = "\\(2505)\\(2514)\\(2509)\\(2505)"
+text/draw 0.523 0.1 string $blue size=tmp
+
+string = "\\(0274) Copyright 1998 CCLRC"
+text/draw/centre 0.5 0.05 string
+
+ENDPROCEDURE

@@ -1,0 +1,85 @@
+PROCEDURE compile
+QUALIFIERS /PIX2D
+
+ IF (PIX2D)
+ module/compile "pix2d_exe.for pix2d.for" symbols="pix2d_exe" &
+		    output="pix2d.so"
+ RETURN
+ ENDIF
+
+ module/compile "vol3d_exe.for vol3d.for" symbols="vol3d_exe" &
+		    output="vol3d.so"
+ module/compile "pro3d_exe.for pro3d.for" symbols="pro3d_exe" &
+		    output="pro3d.so"
+ module/compile "pix2d_exe.for pix2d.for" symbols="pix2d_exe" &
+		    output="pix2d.so"
+ module/compile "cut2d_exe.for cut2d.for" symbols="cut2d_exe" &
+		    output="cut2d.so"
+ module/compile "bin1d_exe.for bin1d.for" symbols="bin1d_exe" &
+		    output="bin1d.so"
+ module/compile "getrun_3d.for" symbols="getrun_3d"
+ module/compile "getpar_3d.for" symbols="getpar_3d"
+
+ENDPROCEDURE
+
+
+PROCEDURE compile_f90
+QUALIFIERS /PIX2D
+
+ IF (PIX2D)
+ module/compile "pix2d_exe.for pix2d.for" symbols="pix2d_exe" &
+		    output="pix2d.so"
+ RETURN
+ ENDIF
+
+# module/compile "vol3d_exe.for vol3d.for" symbols="vol3d_exe" &
+#                   output="vol3d.so"
+# module/compile "pro3d_exe.for pro3d.for" symbols="pro3d_exe" &
+#                   output="pro3d.so"
+ module/compile "pix2d_exe.f90 pix2d.f90" symbols="pix2d_exe" &
+		    output="pix2d.so"
+# module/compile "cut2d_exe.for cut2d.for" symbols="cut2d_exe" &
+#                   output="cut2d.so"
+# module/compile "bin1d_exe.for bin1d.for" symbols="bin1d_exe" &
+#                   output="bin1d.so"
+ module/compile "getrun_3d.f90" symbols="getrun_3d"
+ module/compile "getpar_3d.f90" symbols="getpar_3d"
+
+ENDPROCEDURE
+
+
+PROCEDURE compile_pc
+
+ module/compile "m:\\genie\\canvas\\vol3d_exe.for\" \"m:\\genie\\canvas\\vol3d.for" &
+		symbols="vol3d_exe" output="vol3d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\pro3d_exe.for\" \"m:\\genie\\canvas\\pro3d.for" &
+		symbols="pro3d_exe" output="pro3d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\pix2d_exe.for\" \"m:\\genie\\canvas\\pix2d.for" & 
+		symbols="pix2d_exe" output="pix2d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\cut2d_exe.for\" \"m:\\genie\\canvas\\cut2d.for" & 
+		symbols="cut2d_exe" output="cut2d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\bin1d_exe.for\" \"m:\\genie\\canvas\\bin1d.for" & 
+		symbols="bin1d_exe" output="bin1d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\getrun_3d.for" symbols="getrun_3d" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\getpar_3d.for" symbols="getpar_3d" comp_flags="/extend_source"
+
+ENDPROCEDURE
+
+
+PROCEDURE compile_pc_f90
+# module/compile "m:\\genie\\canvas\\vol3d_exe.for\" \"m:\\genie\\canvas\\vol3d.for" &
+#                symbols="vol3d_exe" output="vol3d.so" comp_flags="/extend_source"
+# module/compile "m:\\genie\\canvas\\pro3d_exe.for\" \"m:\\genie\\canvas\\pro3d.for" &
+#                symbols="pro3d_exe" output="pro3d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\pix2d_exe.f90\" \"m:\\genie\\canvas\\pix2d.f90" & 
+		symbols="pix2d_exe" output="pix2d.so"  comp_flags="/extend_source"
+# module/compile "m:\\genie\\canvas\\cut2d_exe.for\" \"m:\\genie\\canvas\\cut2d.for" & 
+#                symbols="cut2d_exe" output="cut2d.so" comp_flags="/extend_source"
+# module/compile "m:\\genie\\canvas\\bin1d_exe.for\" \"m:\\genie\\canvas\\bin1d.for" & 
+#                symbols="bin1d_exe" output="bin1d.so" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\getrun_3d.f90" symbols="getrun_3d" comp_flags="/extend_source"
+ module/compile "m:\\genie\\canvas\\getpar_3d.f90" symbols="getpar_3d" comp_flags="/extend_source"
+
+ENDPROCEDURE
+
+

@@ -1,0 +1,239 @@
+ FORWARD select_sic_ct
+ FORWARD _sic_backcolour
+
+ PROCEDURE display
+ PARAMETERS data=WORKSPACE x1=REAL x2=REAL y1=REAL y2=REAL &
+            min=REAL max=REAL title=STRING table
+ QUALIFIERS /TK /SQRT /LOG
+ GLOBAL src_dir top_colour out polygons mywedge ct mywin icount
+ GLOBAL one_win two_win one_pic two_pic wx_2d_size wy_2d_size
+ GLOBAL _sic_devtype _cv_limits
+ LOCAL limit w_size x_min x_max y_min y_max start_x &
+	 start_y end_x end_y w_size ratio screen_correction x y  &
+       c_x c_y xrange yrange x_size y_size title_string &
+	 myaxes mylabels mytitle tmp backcolour
+ LOCAL c1_x c2_x c3_x c4_x c1_y c2_y c3_y c4_y i j int
+
+# IF defined(axis)
+#  axis_two = axis
+# ELSE
+#  axis = axis_two
+# ENDIF
+  
+ printn "\n"
+
+ icount=icount+1
+ printin icount
+
+ IF NOT DEFINED(check_canvas_workspace:twod(data))
+  printen "Invalid workspace specified"
+  RETURN
+ ENDIF
+
+ backcolour=_sic_backcolour(_sic_devtype)
+
+ IF defined(min)
+  data.zlimits[1] = min
+ ELSE
+  min = data.zlimits[1]
+ ENDIF
+ 
+ IF defined(max)
+  data.zlimits[2] = max
+ ELSE
+  max = data.zlimits[2]
+ ENDIF
+ 
+ tmp = fields()
+
+ tmp = data
+ tmp.info = " "
+ tmp.flag = 0
+ 
+
+ CASE data.type
+  IS 3
+
+   tmp <~ module:execute("VOL3D_EXE", tmp)
+
+   IF (tmp.flag = -1)
+	printen tmp.info
+   ENDIF
+ 
+   tmp.p1 = data.p1
+   tmp.p2 = data.p2
+   tmp.p3 = data.p3
+   tmp.p4 = data.p4
+   tmp.mode = data.mode
+   tmp.info = " "
+
+   tmp <~ module:execute("PRO3D_EXE", tmp)
+
+#   redim tmp.selectx data.num_p data.num_e
+
+   IF (tmp.flag = -1)
+	printen tmp.info
+   ENDIF
+   
+   limit=tmp.size_x*tmp.size_y
+
+  IS 2
+
+   module/load src_dir+"pix2d.so"
+   tmp <~ module:execute("PIX2D_EXE", tmp)
+   module/unload src_dir+"pix2d.so"
+
+   data.aspect = tmp.aspect
+
+   IF (tmp.flag = -1)
+	printen tmp.info
+   ENDIF
+
+   data.centre_x = tmp.centre_x
+   data.centre_y = tmp.centre_y
+
+   limit = tmp.num_e*tmp.num_p
+
+ ENDCASE
+
+ annotate data
+
+ IF NOT (TK)
+  IF(defined(two_win))
+   select two_win
+   device/clear
+#   IF DEFINED(two_pic)
+#    delete two_pic
+#   ENDIF
+  ELSE
+   printin "Opening 2D plotting window"
+   two_win = device:open(_sic_devtype,wx_2d_size,wy_2d_size)
+  ENDIF
+ ENDIF
+
+  two_pic=picture()
+
+  win_unscaled -0.5 1.5 -0.5 1.5  colour=backcolour
+
+  c_x = tmp.c_x
+  c_y = tmp.c_y
+
+  int = data.intensity
+  redim int limit
+
+  printn min(tmp.c_x)" "max(tmp.c_x)"\n "min(tmp.c_y)" "max(tmp.c_y)
+
+  check_display_limits min(tmp.c_x) max(tmp.c_x) min(tmp.c_y) max(tmp.c_y)
+
+   x_min = _cv_limits[1]
+   x_max = _cv_limits[2]
+   y_min = _cv_limits[3]
+   y_max = _cv_limits[4]
+
+  IF defined(x1) 
+   x_min = x1
+   _cv_limits[1] = x1
+  ENDIF
+  IF defined(x2)
+   x_max=x2
+   _cv_limits[2] = x2
+  ENDIF
+  IF defined(y1)
+   y_min=y1
+   _cv_limits[3] = y1
+  ENDIF
+  IF defined(y2)
+   y_max=y2
+   _cv_limits[4] = y2
+  ENDIF
+
+  w_size = 0.6
+  
+  IF (data.aspect=0.000) OR (data.aspect = 1.0)
+    ratio = 1.0
+  ELSE
+   xrange = x_max - x_min
+   yrange = y_max - y_min
+   ratio = (yrange/xrange)*data.aspect
+  ENDIF
+
+  screen_correction = wx_2d_size/wy_2d_size
+  ratio = ratio*screen_correction
+
+ IF(ratio<1)
+   x_size = w_size
+   y_size = w_size*ratio
+ ELSE
+   x_size = w_size/ratio
+   y_size = w_size
+ ENDIF
+
+ start_x = 0.45 - ((x_size/2.0))
+ end_x = 0.45 + ((x_size/2.0))
+ start_y = 0.5 - ((y_size/2.0))
+ end_y = 0.5 + ((y_size/2.0))
+
+ win_scaled start_x end_x start_y end_y x_min x_max y_min y_max colour=backcolour
+ 
+ ct=select_sic_ct(data,table)
+
+ IF (LOG) 
+   printn " Using LOG colour tables"
+  polygons=cell_array:draw:polygon:log(data.intensity,ct,c_x,c_y, &
+          valmin=data.zlimits[1],valmax=data.zlimits[2])
+ ELSEIF (SQRT)
+   printn " Using SQRT colour tables"
+    polygons=cell_array:draw:polygon:sqrt(data.intensity,ct,c_x,c_y, &
+          valmin=data.zlimits[1],valmax=data.zlimits[2])
+ ELSE
+  printn " Using normal colour tables"
+    polygons=cell_array:draw:polygon:linear(data.intensity,ct,c_x,c_y, &
+          valmin=data.zlimits[1],valmax=data.zlimits[2])
+ ENDIF
+
+ myaxes=axes:draw()
+ mylabels=labels:draw(data.x_title,data.y_title)
+
+ IF defined(title)
+  title_string = title
+ ELSE
+  title_string=as_string(data.file)
+#d.name+" : "+d.file+"   Plot_mode = "+as_string(d.plot_mode)
+ ENDIF
+
+ mytitle=title:draw(title_string)
+
+# Draw colour wedge
+
+ win_unscaled 0.85 0.9 start_y end_y
+ mywedge=cell_wedge:draw:vertical(object=polygons)
+ myaxes=axes:draw:noxnum()
+ 
+ win_scaled start_x end_x start_y end_y x_min x_max y_min y_max 
+                         
+ ENDPROCEDURE
+
+ PROCEDURE select_sic_ct
+  PARAMETERS work=WORKSPACE table
+  RESULT output
+  GLOBAL top_colour
+
+ IF (work.colours="rainbow")
+  output = colourtable:rainbow(top_colour)
+ ELSE
+  output = colourtable:heat(top_colour)
+ ENDIF
+
+ IF defined(table)
+  output=table
+ ENDIF
+
+ ENDPROCEDURE
+
+ PROCEDURE _sic_backcolour
+ PARAMETERS devtype
+ RESULT out
+  IF (devtype="tk")
+   out = colour:rgb(0.01,0.01,0.01)
+  ENDIF
+ ENDPROCEDURE

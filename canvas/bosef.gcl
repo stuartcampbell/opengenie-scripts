@@ -1,0 +1,30 @@
+PROCEDURE bosef
+ PARAMETERS w=WORKSPACE temp=REAL
+ RESULT res
+
+ LOCAL tmp neutron_energy neutron_energy_centre scale_factor
+
+  tmp = w
+  
+  neutron_energy = dimensions(tmp.num_p, tmp.num_e)
+  neutron_energy_centre = centre_bins(tmp.energy)  
+
+   LOOP j FROM 1 TO tmp.num_e
+    LOOP i FROM 1 TO tmp.num_p
+    neutron_energy[i,j] = neutron_energy_centre[j]
+   ENDLOOP
+  ENDLOOP
+ 
+  scale_factor = 1/(1+(exp(-neutron_energy/(0.086165*temp))))
+
+  tmp.intensity = tmp.intensity * scale_factor
+  tmp.error = tmp.error * scale_factor
+
+  IF called_as_function()
+   res = tmp
+  ELSE
+   w = tmp
+  ENDIF
+   
+
+ENDPROCEDURE

@@ -1,0 +1,125 @@
+FORWARD mode
+FORWARD check_canvas_workspace
+FORWARD check_display_limits
+FORWARD logo
+FORWARD inquire_real
+FORWARD inquire_integer
+FORWARD sqwin
+FORWARD newin
+
+PROCEDURE init_canvas
+ QUALIFIERS /RELOAD /PG
+ GLOBAL src_dir 
+ LOCAL string
+ GLOBAL wx_1d_size wy_1d_size wx_2d_size wy_2d_size
+ GLOBAL axis_one axis_two one_win two_win _sic_devtype
+ GLOBAL top_colour cv_x cv_y cv_error _cv_limits _sic_tk_status
+ GLOBAL cv_number cv_index cv_colour cv_symbol cv_err_flag cv_x_title cv_abs
+		 
+ toggle/info/off
+
+  printn "\n"
+  printn "\27[34m Initialising variables..."
+
+
+  axis_one = 0
+  axis_two = 0
+  cv_index = 0
+  cv_number = 0
+  cv_x = 0
+  cv_y = 0
+  cv_error = 0
+
+  top_colour = 80               # Maximum number of colours
+
+  _cv_limits = dimensions(4)
+
+  wx_1d_size = 4.5
+  wy_1d_size = 3.15 
+  
+  wx_2d_size = 4.5
+  wy_2d_size = 4.5 
+
+ IF os() = "VMS"
+#  load "user$disk:[sic01.opengenie.init]stuart.gcl"
+#  src_dir = "tryfan$disk0:[canvas.develop.sic01]"
+#  src_dir = "user$disk:[sic01.opengenie.canvas]"
+  src_dir = "og:"
+ ELSE
+#  load "/vax/user/sic01/opengenie/init/stuart.gcl"
+#  src_dir = "/usr/users/sic01/opengenie/canvas/"
+ ENDIF
+  
+ IF os() = "WINNT"
+  src_dir = "m:/genie/canvas/"
+  src_dir = ""
+ ENDIF 
+
+ printn "\27[34m Loading Routines..."
+
+ IF (RELOAD)
+ alias "h" "help"
+ alias "l" "limits"
+#  src_dir = "user$disk:[sic01.opengenie.canvas]"
+ load src_dir+"mode.gcl"
+ print "\27[34m."
+ load src_dir+"limits.gcl"
+ print "\27[34m."
+ load src_dir+"getdata.gcl"
+ print "\27[34m."
+ load src_dir+"add_line.gcl"
+ print "\27[34m."
+ load src_dir+"annotate.gcl"
+ print "\27[34m."
+ load src_dir+"annotate_cut.gcl"
+ print "\27[34m."
+ load src_dir+"clear_line.gcl"
+ print "\27[34m."
+ load src_dir+"info.gcl"
+ print "\27[34m."
+ load src_dir+"display.gcl"
+ print "\27[34m."
+ load src_dir+"graphit.gcl"
+ print "\27[34m."
+ load src_dir+"graf.gcl"
+ print "\27[34m."
+ load src_dir+"cut.gcl"
+ print "\27[34m."
+ load src_dir+"cut2d.gcl"
+ print "\27[34m."
+ load src_dir+"canvas_help.gcl"
+ print "\27[34m."
+ load src_dir+"utils.gcl"
+ print "\27[34m."
+ load src_dir+"check_canvas_workspace.gcl"
+ print "\27[34m."
+ load src_dir+"set_axes.gcl"
+ print "\27[34m."
+ load src_dir+"logo.gcl"
+ printn "\27[34m."
+  src_dir = "og:"
+ ENDIF
+ toggle/info/on
+
+   IF (OS()="WINNT")
+    IF (PG)
+     _sic_devtype="wf"
+     two_win=device:open(_sic_devtype,wx_2d_size,wy_2d_size)
+    ELSE
+     _sic_devtype="tk"
+     two_win=dev(0)
+     one_win=dev(0)
+    ENDIF
+   ELSE
+    _sic_devtype="xw"
+    two_win=device:open(_sic_devtype,wx_2d_size,wy_2d_size)
+   ENDIF
+
+ IF os() = "OSF"
+  cd src_dir
+  src_dir = ""
+ ENDIF
+
+ logo
+
+ENDPROCEDURE

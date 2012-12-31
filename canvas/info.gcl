@@ -1,0 +1,17 @@
+PROCEDURE info
+
+ GLOBAL cv_x cv_y cv_error cv_number cv_index cv_colour &
+ 	  cv_symbol cv_err_flag cv_x_title cv_abs
+
+ printin cv_x
+ printin cv_y
+ printin cv_error
+ printin cv_number
+ printin cv_index
+ printin cv_colour
+ printin cv_symbol
+ printin cv_err_flag
+ printin cv_x_title
+ printin cv_abs
+
+ENDPROCEDURE

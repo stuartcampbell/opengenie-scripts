@@ -1,0 +1,322 @@
+FORWARD __cut2d_help
+FORWARD __display_help
+FORWARD __getdata_help
+FORWARD __graf_help
+FORWARD __hard_help
+FORWARD __limits_help
+FORWARD __mode_help
+FORWARD __size1d_help
+FORWARD __size2d_help
+FORWARD __swap_axes_help
+FORWARD __general_help
+
+PROCEDURE help
+PARAMETERS p1
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+GLOBAL _SIC_LRGE_UPPER _SIC_LRGE_LOWER
+ 
+ printn "\n"
+
+ IF (OS()="WINNT")
+  _SIC_BOLD = ""
+  _SIC_NORM = ""
+  _SIC_BLUE = ""
+  _SIC_RED = ""
+  _SIC_LRGE = ""
+  _SIC_UNDER = ""
+  _SIC_LRGE_UPPER = ""
+  _SIC_LRGE_LOWER = ""
+ ELSE
+  _SIC_BOLD = "\27[01m"
+  _SIC_NORM = "\27[0m"
+  _SIC_BLUE = "\27[34m"
+  _SIC_RED = "\27[31m"
+  _SIC_UNDER = "\27[04m"
+  _SIC_LRGE = "\27#6"
+  _SIC_LRGE_UPPER = "\27#3"
+  _SIC_LRGE_LOWER = "\27#4"
+ ENDIF
+
+ IF NOT DEFINED(p1)    # Print list of commands
+   __general_help
+   RETURN
+ ENDIF
+
+ CASE p1
+  IS "cut2d"
+   __cut2d_help
+  IS "display"
+   __display_help
+  IS "getdata"
+   __getdata_help
+  IS "graf"
+   __graf_help
+  IS "hard"
+   __hard_help
+  IS "limits"
+   __limits_help
+  IS "mode"
+   __mode_help
+  IS "size1d"
+   __size1d_help
+  IS "size2d"
+   __size2d_help
+  IS "swap_axes"
+   __swap_axes_help
+  OTHERWISE
+   printen "No Help available on this command"
+ ENDCASE
+ 
+ENDPROCEDURE
+
+PROCEDURE __general_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+GLOBAL _SIC_LRGE_UPPER _SIC_LRGE_LOWER
+   printn _sic_blue " "_SIC_LRGE_UPPER" CANVAS"
+   printn _sic_blue " "_SIC_LRGE_LOWER" CANVAS"
+   printn _sic_red _sic_lrge "Data Visualisation Package"
+   printn ""
+   printn " List of available commands are...."
+   printn ""
+   printn _sic_bold"  cut2d"_sic_norm"     ==> Produces a 1D cut through data"
+   printn _sic_bold"  display"_sic_norm"   ==> General plot for 2D data" 
+   printn _sic_bold"  getdata"_sic_norm"   ==> Loads data"
+   printn _sic_bold"  graf"_sic_norm"      ==> General plot for 1D data"
+   printn _sic_bold"  hard"_sic_norm"      ==> produces a hardcopy file"
+   printn _sic_bold"  limits"_sic_norm"    ==> sets/shows current plotting range"
+   printn _sic_bold"  mode"_sic_norm"      ==> sets current plotting mode"       
+   printn _sic_bold"  size1d"_sic_norm"    ==> sets/shows size of 1D plotting window"
+   printn _sic_bold"  size2d"_sic_norm"    ==> sets/shows size of 2D plotting window"
+   printn _sic_bold"  swap_axes"_sic_norm" ==> Reverses x/y axes"
+   printn ""
+   printn " For more help on a specific command then type "_sic_bold" HELP \""+ &
+	    ""_sic_norm"command"_sic_bold"\""
+   printn " (e.g. help \"display\")"
+   printn ""
+   printn " If you have a problem that is not covered either here or "
+   printn " in the specific command function help, then please contact"
+   printn " Stuart Campbell ("_sic_blue"S.I.Campbell@rl.ac.uk"_sic_norm") or for problems" 
+   printn " relating to Open GENIE please mail genie@isise.rl.ac.uk"
+   print ""
+ENDPROCEDURE
+
+PROCEDURE __cut2d_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  CUT2D :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  /CURSOR"
+   printn ""
+   printn "    "_sic_under"Parameters:"
+   printn ""
+   printn "	  x1=<real> y1=<real> x2=<real> y2=<real> binx=<real> biny=<real>"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     General routine to display 2D data sets. Option to"
+   printn "     use either SQRT or LOG colour scales.             "
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> c=cut2d(w,1.0,4.0,1.0,5.0,0.1,0.2) # Cuts workspace \"w\""
+   printn "	                                          from (1,4) to (1,5) "
+   printn "	                                          in bin sizes of 0.1 "
+   printn "	                                          along x-dimension and"
+   printn "	                                          0.2 along y-dimension"
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __display_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn " DISPLAY :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  /SQRT /LOG"
+   printn ""
+   printn "    "_sic_under"Parameters:"
+   printn ""
+   printn "	  min=<real> max=<real>"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     General routine to display 2D data sets. Option to"
+   printn "     use either SQRT or LOG colour scales.             "
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> display w               # Displays workspace \"w\" using "
+   printn "	                               default settings"
+   printn "	  >> display w max=5.0       # Rescales the out of plane axis to"
+   printn "	                               have a maximum value of 5.0"
+   printn "	  >> display w 0 10 2 6      # Rescales the plot axes to 0.0<x<10.0"
+   printn "	                               and 2.0<y<6.0 ."
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __getdata_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold" GETDATA :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  none"
+   printn ""
+   printn "    "_sic_under"Parameters:"
+   printn ""
+   printn "	  RUN=<string> PAR=<string> EI=<real> PSI=<real>"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     Reads in .SPE and .PAR file.  If no arguements are passed"
+   printn "     then the program will prompt for the required fields.    "
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> w = getdata()           # Prompts user for filenames and EI"
+   printn "	  >> w = getdata(run=\"mar06534.spe\",par=\"test.par\", & "
+   printn "	         ei=45.0,psi=30.0)"
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __graf_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printin ""_sic_bold"  GRAF :"
+   printin ""
+ENDPROCEDURE
+
+PROCEDURE __hard_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  HARD :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  /BW"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     Routine to dump current plotting window to a  "
+   printn "     postscript file (colour or black&white).     "
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> hard                    # Writes plot to \"genie.ps\""
+   printn "	  >> hard \"hello.ps\"         # Writes plot to \"hello.ps\""
+   printn "	  >> hard/bw                 # Writes Black & White plot"
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __limits_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  LIMITS :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  /AUTO /SHOW /X /Y"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     General utility routine that allows the user to set "
+   printn "     (or show) the range used for 2D plotting.           "
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> limits/show             # Displays current limits"
+   printn "	  >> limits/auto             # Autoscales both axes"
+   printn "	  >> limits/auto/y           # Autoscales y-axis only"
+   printn "	  >> limits/x 3.0e4 5.0e4    # Set x-range from 30000 to 50000"
+   printn "	  >> limits 0.0 50.0 0.0 5.0 # Set x-range from 0 to 50"
+   printn "	                             # and y-range from 0 to 5 "
+ENDPROCEDURE
+
+PROCEDURE __mode_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  MODE :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  none"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     Changes the default plotting mode."                   
+   printn ""
+   printn "     Preset modes are :"                                   
+   printn ""
+   printn "         1 : Qx vs Qz  "                                   
+   printn "         2 : Qx vs Qz  "                                   
+   printn "         3 : Qx vs Qz  "                                   
+   printn "         4 : Qx vs Qz  "                                   
+   printn "         5 : Qx vs Qz  "                                   
+   printn "         6 : Qx vs Qz  "                                   
+   printn "         7 : Qx vs Qz  "                                   
+   printn "         8 : Qx vs Qz  "                                   
+   printn "         9 : Qx vs Qz  "                                   
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> mode w 1          # Sets workspace \"w\" to plot Qx vs Qz"
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __size1d_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  SIZE1D :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  /SHOW"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     General utility routine that allows the user to set "
+   printn "     (or show) the size of the window used for 1D plotting."
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> size1d/show             # Displays current window size"
+   printn "	  >> size1d 5.0 3.0          # Sets window to 5.0 x 3.0 inches"
+   printn "	  >> size1d 7.5              # Sets window to 7.5 x 7.5 inches"
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __size2d_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  SIZE2D :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  /SHOW"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     General utility routine that allows the user to set "
+   printn "     (or show) the size of the window used for 2D plotting."
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> size2d/show             # Displays current window size"
+   printn "	  >> size2d 5.0 3.0          # Sets window to 5.0 x 3.0 inches"
+   printn "	  >> size2d 7.5              # Sets window to 7.5 x 7.5 inches"
+   printn ""
+ENDPROCEDURE
+
+PROCEDURE __swap_axes_help
+GLOBAL _SIC_BOLD _SIC_BLUE _SIC_NORM _SIC_UNDER _SIC_LRGE _SIC_RED 
+   printn ""_sic_bold"  SWAP_AXES :"
+   printn ""
+   printn "    "_sic_under"Qualifiers:"
+   printn ""
+   printn "	  none"
+   printn ""
+   printn "    "_sic_under"Description:"
+   printn ""
+   printn "     Reverses the x/y axes used for a 2D plot. "
+   printn ""
+   printn "    "_sic_under"Syntax:"
+   printn ""
+   printn "	  >> swap_axes w             # Reverses the x/y axes for the"
+   printn "	                             # workspace \"w\""              
+   printn ""
+ENDPROCEDURE
