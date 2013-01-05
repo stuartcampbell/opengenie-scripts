@@ -1,0 +1,13 @@
+#===============================================================================
+PROCEDURE now
+#===============================================================================
+QUALIFIERS /sec
+RESULT res
+IF sec
+ %( gXres _ Time millisecondClockValue)%
+ res = res / 10
+RETURN
+ENDIF
+%( gXres _ ( Date today printString, ' ', Time now printString ) )%
+ENDPROCEDURE
+comment "now"   "Returns current date and time"

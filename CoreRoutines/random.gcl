@@ -1,0 +1,16 @@
+#===============================================================================
+PROCEDURE Random          # Stuart Campbell (March 1999)
+#===============================================================================
+PARAMETERS n=Integer
+RESULT RES
+GLOBAL _RANDOM
+LOCAL B
+IF DEFINED(n)
+ %( gXb _ gXUrandom next: gXn )%
+ RES=dimensions(n)
+ %( 1 to: gXn do: [ :i | gXres at: i put: (gXb at: i) ] )%
+ RETURN
+ENDIF
+%( gXres _ gXUrandom next )%
+ENDPROCEDURE
+comment "random"   "Returns an array of random numbers between 0.0 and 1.0"
