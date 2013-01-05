@@ -1,0 +1,15 @@
+#===============================================================================
+PROCEDURE random          # Stuart Campbell (March 1999)
+#===============================================================================
+QUALIFIERS /NORMAL /UNIFORM
+PARAMETERS n=INTEGER
+RESULT res
+LOCAL a b
+a = _ ; b= _
+IF (n = _);  n = 1; ENDIF   # if n undefined, just return a single number
+%( gXa _ Random new )%
+%( gXb _ gXa next: gXn )%
+res=dimensions(n)
+%( 1 to: gXn do: [ :i | gXres at: i put: (gXb at: i) ] )%
+ENDPROCEDURE
+comment "random"   "Returns an array of random numbers between 0.0 and 1.0"
