@@ -1,0 +1,9 @@
+alter/plotcolour $blue
+d sim -0.1 0.1
+pp vanyval = 0.9
+vanleg=line:draw(xstart=0.035,xend=0.055,ystart=yval,yend=yval,colour=$red,line_type=$dash)
+vantext=text:draw(0.057,yval-0.015,text="Vanadium",size=0.9)   
+alter/plotcolour $blue
+yval=0.8
+simleg=line:draw(xstart=0.035,xend=0.055,ystart=yval,yend=yval)
+simtext=text:draw(0.057,yval-0.015,text="Monte Carlo",size=0.9)   

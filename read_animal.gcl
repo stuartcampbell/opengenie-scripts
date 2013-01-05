@@ -1,0 +1,25 @@
+PROCEDURE read_animal
+PARAMETERS file_in=STRING
+LOCAL sicfile nspec
+ IF (file_in = _)
+   printen "You need to give a filename !"
+   RETURN 
+ ENDIF 
+ 
+ nspec = inquire("How many spectra ") 
+ 
+ sicfile = asciifile:open(file_in,comment="#")  
+ wout = dimensions(nspec) 
+ 
+ LOOP i FROM 1 TO nspec 
+   wout[i] = fields()  
+   tmp = asciifile:readfree(sicfile,"SPECNO,BINS",count=1)  
+   wout[i].spec_no = as_string(tmp.specno)  
+   wout[i].ntc = tmp.bins  
+   tmp = asciifile:readfree(sicfile,"X,Y",count=wout[i].bins)  
+   wout[i].x=tmp.x; wout[i].y=tmp.y 
+ ENDLOOP 
+ 
+ asciifile/close sicfile
+ 
+ENDPROCEDURE
