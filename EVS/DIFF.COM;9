@@ -1,0 +1,45 @@
+! command file to take difference of 2 runs for series of detectors
+> SET disk EVS_data
+> SET dir 
+> SET ins EVS
+> SHOW DEF
+> SET WORK 65 2600
+!
+$ INQUIRE NRUN " ENTER RUN NUMBER"
+$ INQUIRE NSPEC1 " ENTER FIRST SPECTRUM"
+$ INQUIRE NSPEC2 " ENTER LAST SPECTRUM"
+!
+! NDET=no of detectors, NMON=no of incident beam monitor spectrum.
+$ NDET=35
+$ NMON=33
+! Lim1 and LIM2 are limits of region of interest. 
+$ LIM1=10
+$ LIM2=650
+! NL1 and NL2 are limits of normalisation integral.
+$ NL1=500
+$ NU1=600
+!
+!
+! NORMALISE TO INCIDENT BEAM MONITOR
+> ASS 'NRUN'
+> W65=S'NMON'
+> INTEGRATE W65 3000 4000
+$ NORM=V1
+! MONITOR NORMALISATION='NORM'
+!
+$ DO I =NSPEC1,NSPEC2
+!
+> W'I'=S'I'
+> REBIN W'I' 'LIM1': 'LIM2'
+> INTEGRATE W'I' 'NL1' 'NU1'
+> W'I'=W'I'/V1
+!
+$ I1=I+NDET+1
+> W65=S'I1'
+> REBIN W65 'LIM1':'LIM2'
+> INTEGRATE W65 'NL1' 'NU1'
+> W65=W65/V1
+$ norm1=v1
+> W'I'=-(W65-W'I')*('NORM1'/'NORM')
+$ END DO
+!

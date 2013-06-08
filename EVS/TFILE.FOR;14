@@ -1,0 +1,68 @@
+C PRODUCE SINGLE FILE FROM SERIES OF FILES PRODUCED BY TFIT
+      PROGRAM TFILE
+      LOGICAL FEXST
+
+      REAL MASS(10),WT(50,10),WTE(50,10)
+     *,SIG(50,10),SIGE(50,10)
+
+
+      CHARACTER*2 DET2
+      CHARACTER*1 DET1
+      CHARACTER*30 FNAME
+
+      NDETMIN=100
+      NDETMAX=0
+      NDTOT=0 ! Total number of detectors.
+      DO IFILE=1,99 ! Start of loop over files.
+
+C  Define file name interms of do loop index.
+      IF(IFILE.LT.10) THEN
+      WRITE(DET1(1:1),'(I1.1)') IFILE
+      FNAME=' TFIT.OUT;'//DET1
+      ELSE
+      WRITE(DET2(1:2),'(I2.2)') IFILE
+      FNAME=' TFIT.OUT;'//DET2
+      END IF
+
+      INQUIRE(FILE=FNAME,EXIST=FEXST)
+      IF(FEXST) THEN
+       NDTOT=NDTOT+1
+       OPEN(UNIT=3,FILE=FNAME,STATUS='OLD')
+       READ(3,*) NDET
+       IF(NDET.LT.NDETMIN) NDETMIN=NDET
+       IF(NDET.GT.NDETMAX) NDETMAX=NDET
+       DO J=1,10
+        READ(3,*,END=10) IM,MASS(IM),WT(NDET,IM),WTE(NDET,IM)
+     *  ,SIG(NDET,IM),SIGE(NDET,IM)
+       END DO
+   10 NM=IM
+      END IF
+      CLOSE(3)
+
+      END DO ! End of Loop over Files.
+
+      OPEN(UNIT=4,FILE='TFILE.OUT',STATUS='NEW')
+      WRITE(4,*) NM
+      WRITE(4,*) NDTOT
+      WRITE(4,*) ' '
+      DO IM=1,NM
+       WRITE(4,*) ' '
+       WRITE(4,*) MASS(IM)
+       WRITE(4,*) ' '
+      WRITE(4,*) '   ','      WEIGHT    ','     ERROR     ',
+     $'     SIGMA     ','     ERROR     '
+       WRITE(6,*) ' '
+       WRITE(6,*) ' FOR MASS', MASS(IM)
+       WRITE(6,*) ' '
+      WRITE(6,*) '   ','      WEIGHT    ','     ERROR     ',
+     $'     SIGMA     ','     ERROR     '
+       DO ID=NDETMIN,NDETMAX
+        WRITE(6,15) ID,WT(ID,IM),WTE(ID,IM),SIG(ID,IM),SIGE(ID,IM)
+        WRITE(4,15) ID,WT(ID,IM),WTE(ID,IM),SIG(ID,IM),SIGE(ID,IM)
+   15   FORMAT(' ',I3,1P4E15.4)
+       END DO
+      END DO
+      CLOSE(4)
+      WRITE(6,*) ' OUTPUT IN TFILE.OUT'
+      STOP
+      END

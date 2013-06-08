@@ -1,0 +1,70 @@
+PROCEDURE diff
+ PARAMETERS run nspec1=INTEGER nspec2=INTEGER
+ RESULT res
+ 
+ LOCAL ndet nmon lim1 lim2 normlim1 normlim2 norm monitor 
+ GLOBAL w_in w_out out_norm in_norm tmp nspec
+ GLOBAL w
+
+ print "\n"
+
+ IF NOT DEFINED(run)
+  run = inquire("ENTER RUN NUMBER")
+ ENDIF
+ IF NOT DEFINED(nspec1)
+  nspec1 = inquire_integer("ENTER FIRST SPECTRUM")
+ ENDIF
+ IF NOT DEFINED(nspec2)
+  nspec2 = inquire_integer("ENTER LAST SPECTRUM")
+ ENDIF
+                   
+ nspec = nspec2-nspec1+1
+                   
+ tmp = dimensions(nspec)
+ ndet = 35
+ ndet = get("NSP1")
+ nmon = 33
+ nmon = 
+
+ lim1 = 10.0
+ lim2 = 650.0
+
+ normlim1 = 500.0
+ normlim2 = 600.0
+
+ assign run
+ norm = integrate(s(nmon), 3000.0, 4000.0)
+ printn "Monitor normalisation = "norm.sum
+
+ printn now()
+
+ w_in = get:array((nspec1):(nspec2))
+ w_out = get:array((nspec1+1+ndet):(nspec2+1+ndet))
+
+ toggle/info/off
+
+ LOOP i FROM nspec1 TO nspec2
+
+  rebin w_in[i] lim1 lim2
+  in_norm = integrate(w_in[i], normlim1, normlim2)
+  w_in[i] = w_in[i] / in_norm.sum
+
+  rebin w_out[i] lim1 lim2
+  out_norm = integrate(w_out[i], normlim1, normlim2)
+  w_out[i] = w_out[i] / out_norm.sum
+
+  tmp[i] = -(w_out[i] - w_in[i])*(out_norm.sum/norm.sum)
+
+ ENDLOOP
+
+ toggle/info/on
+
+ printn now()
+ 
+ IF called_as_function()
+  res = tmp
+ ELSE
+  w = tmp
+ ENDIF
+
+ENDPROCEDURE

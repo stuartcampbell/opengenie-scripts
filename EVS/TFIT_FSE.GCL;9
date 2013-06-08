@@ -1,0 +1,48 @@
+PROCEDURE tfit_fse
+PARAMETERS work=WORKSPACEARRAY
+RESULT fit
+
+ LOCAL v fname nspec1 nspec2 e1 de1 npeaks maxfun back &
+       ipno mass pkht fwid tmpstr fit tmp
+
+  fname=inquire_string("ENTER NAME OF OUTPUT FILE")
+  nspec1=inquire_integer("ENTER FIRST SPECTRUM")
+  nspec2=inquire_integer("ENTER LAST SPECTRUM")
+  e1=inquire_real("ENTER ANALYSER ENERGY")
+  de1=inquire_real("ENTER ENERGY RESOLUTION")
+  ipno=inquire_real("ENTER NO OF INST PAR FILE")
+  back=inquire_real("ENTER BACK")
+  npeaks=inquire_real("ENTER NUMBER OF PEAKS")
+  maxfun=inquire_real("ENTER MAXIMUM NUMBER OF ITERATIONS")
+  
+  v = dimensions(as_integer(npeaks)+15); fill v 0.0
+  
+  v[2] = e1
+  v[3] = de1
+  v[4] = ipno
+  v[5] = npeaks
+  v[6] = maxfun
+  v[7] = back
+
+  LOOP i FROM 1 TO npeaks                     
+   tmpstr = "ENTER ATOMIC MASS "+as_string(i)
+   v[(i+7)] = inquire_real(tmpstr)
+   v[(i+11)] = inquire_real("ENTER PRODUCT OF X-SECT AND REL CONC. (0 TO FIT)")
+   v[(i+15)] = inquire_real("ENTER PEAK WIDTH (0 TO FIT WIDTH)")
+  ENDLOOP
+
+  system "delete tfit.out;*"
+  system "delete tfile.out;*"
+ 
+  fit = work
+
+  LOOP i FROM nspec1 TO nspec2
+   v[1] = i
+   tmp = work[i]
+   tmp.v = v
+   tmp.x = centre_bins(tmp.x)
+   tmp = module:execute("tfit_fse", tmp)
+   fit[i].y = tmp.y
+  ENDLOOP
+                        
+ENDPROCEDURE

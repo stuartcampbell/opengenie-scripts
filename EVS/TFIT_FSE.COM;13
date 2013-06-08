@@ -1,0 +1,63 @@
+! Fitting parameters are peak widths and areas.
+! If starting value other than zero is entered for peak width or area, value
+! is fixed. If value of xero is entered, parameter is fitted.
+! Position of peaks is fixed by mass
+! Also fits linear background if required.
+! If E1 .lt. 5000 meV Voigt functions, otherwise Gaussians
+!
+$ nwork=40
+$ INQUIRE FNAME " ENTER NAME OF OUTPUT FILE"
+$ INQUIRE NSPEC1 " ENTER FIRST SPECTRUM"
+! First spectrum:'nspec1'
+$ INQUIRE NSPEC2 " ENTER LAST SPECTRUM"
+! Last spectrum:'nspec2'
+$ inquire e1 " ENTER  ANALYSER ENERGY "
+! Energy resolution (V2): 'e1'
+$ V2=E1
+$ inquire de1 " ENTER ENERGY RESOLUTION"
+! Energy resolution (V3: 'de1'
+$ V3=DE1
+$ Inquire IPNO " ENTER NO OF INST PAR FILE"
+! Inst par file number (V4):'ipno'
+$ V4=IPNO
+! If BACK=1, linear background is subtracted
+! BACK=0 gives no subtraction
+$ INQUIRE BACK " ENTER BACK"
+! BACK='BACK'
+$ v7=back
+$ INQUIRE NPEAKS " ENTER NUMBER OF PEAKS"
+! Number of Peaks (V5): 'npeaks'
+$ V5=NPEAKS
+!$ INQUIRE MAXFUN " ENTER MAXIMUM NUMBER OF ITERATIONS"
+$  MAXFUN=2000
+$  V6=MAXFUN
+!  Number of iterations:'maxfun'
+!
+$  DO I=1,NPEAKS
+$   INQUIRE MASS " ENTER ATOMIC MASS'I'"
+$   NM=I+7
+$   V'NM'=MASS
+! mass'i' (v'nm'):'mass'
+$   INQUIRE PKHT " ENTER PRODUCT OF X-SECT AND REL CONC. (0 TO FIT)"
+$   NP=I+11
+$   V'NP'=PKHT
+! Peak'i' (v'np'):'pkht'
+$   INQUIRE FWID " ENTER PEAK WIDTH (0 TO FIT WIDTH)"
+$   NP=I+15
+$   V'NP'=FWID
+! Peak'i' (v'np'):'FWID'
+$  END DO   
+!
+! Fit 'npeaks' peaks.
+> J " DELETE TFIT.OUT;*
+> J " DELETE TFILE.OUT;*
+$ DO NSPEC=NSPEC1,NSPEC2
+$  V1=NSPEC
+>  FU W'NSPEC' evs$disk0:[EVSMGR.USERPROGS]TFIT_FSE W40
+>  WRITE/OPEN W40 'FNAME'_FIT.'NSPEC'
+>  WRITE/CLOSE
+$ END DO
+>  J " RUN  EVS$disk0:[EVSMGR.USERPROGS]TFILE 
+>  J " RENAME TFILE.OUT 'FNAME'.DAT
+>  J " DELETE TFIT.OUT;*
+!

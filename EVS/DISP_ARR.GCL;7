@@ -1,0 +1,17 @@
+PROCEDURE disp_arr
+ PARAMETERS w=WORKSPACE n=REAL
+
+ LOCAL tmp nspec maxspec
+
+ IF (dimensionality(w.y)>1)
+  tmp = w
+  tmp.y = cut(w.y,1,n)
+  tmp.e = cut(w.y,1,n)
+  nspec = length(w.delta)
+  maxspec = as_variable(w.spec_no)
+  tmp.spec_no = as_string(as_integer(maxspec-nspec+n))
+  display tmp
+  RETURN
+ ENDIF
+
+ENDPROCEDURE
