@@ -1,0 +1,25 @@
+Subclass class="Triple_axis" superclass="Structure" &
+	   comment="TA class comment" names="f1 f2 f3"
+Subclass class="My_Triple_axis" superclass="Triple_axis" &
+	   comment="My TA class comment" names="f4"
+
+PROCEDURE ta_focus
+	PARAMETERS a b c
+	LOCAL test
+	printn "ta_focus" a b c
+	printin "a = "a
+	printin "b = "b
+	printin "c = "c
+	printin _self
+ENDPROCEDURE
+
+PROCEDURE my_ta_focus
+	PARAMETERS self=my_triple_axis
+	RESULT res
+	[_self._focus()]
+	printn "My focus"
+	res = _self
+      res.f1 = 1.0
+	printin _self
+ENDPROCEDURE
+

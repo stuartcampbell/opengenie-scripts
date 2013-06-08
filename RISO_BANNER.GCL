@@ -1,0 +1,59 @@
+#-------------------------------------------------------------------------------
+# BANNER draws the banner at the top of a plot
+#
+PROCEDURE __G2_BANNER
+PARAMETERS  INST=string RUN=string SPECT=string FILE=string USER=string	   &
+		RUNTIME=string GROUPING=string INSTITUTE=String
+
+# some defaults
+LOCAL INST = " "
+LOCAL RUN = " "
+LOCAL SPECT = " "
+LOCAL FILE = " "
+LOCAL USER = " "
+LOCAL RUNTIME = " "
+LOCAL GROUPING = " "
+LOCAL INSTITUTE = "\\(2068)\\(2159)\\(2169)\\(2186)"
+#LOCAL INSTITUTE = "RISO"
+
+LOCAL XMIN = _SDJ_GW.LEFT
+LOCAL XMAX = _SDJ_GW.RIGHT
+LOCAL YMAX = _SDJ_GW.TOP
+LOCAL YMIN = _SDJ_GW.BOTTOM 
+LOCAL XOFF
+LOCAL YOFF
+LOCAL TEXT
+LOCAL L_C = _SDJ_GW.LINECOLOUR
+LOCAL L_W = _SDJ_GW.LINEWIDTH
+LOCAL T_C = _SDJ_GW.TEXTCOLOUR
+
+		YOFF = 0.8 * (YMAX - YMIN)
+		YMIN = YMIN + YOFF
+
+		WIN_UNSCALED XMIN XMAX YMIN YMAX
+		IF G_ERROR_HANDLER(); RETURN;ENDIF
+		DRAW/BOX 0.01 0.01 0.99 0.99 L_C L_W
+
+		# fill in the text
+		__BTEXT 0.21 0.8 "Instrument: " + INST
+
+		__BTEXT 0.21 0.6 "Run number: " + RUN
+
+		__BTEXT 0.21 0.4 "Spectrum: " + SPECT
+
+		__BTEXT 0.21 0.07 "Location: " + FILE
+
+		__BTEXT 0.49 0.8 "User: " + USER
+
+		__BTEXT 0.49 0.61 "Run start time: " + RUNTIME
+
+		__BTEXT 0.49 0.42 "Plot date: " + NOW()
+
+		__BTEXT 0.49 0.23 "Grouping: " + GROUPING
+
+		DRAW/BOX  0.02 0.1 0.20 0.9 L_C L_W
+
+		__BTEXT 0.04 0.3 INSTITUTE 3.5
+
+ENDPROCEDURE
+comment "__g2_banner" "draws the RISO banner"

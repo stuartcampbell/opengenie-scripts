@@ -1,0 +1,29 @@
+
+PROCEDURE extract_notebook
+ PARAMETERS first_run=INTEGER last_run=INTEGER
+
+ LOCAL i infile outfile notebook h
+
+  set/inst "pol"
+
+ LOOP i FROM first_run TO last_run
+
+  set/disk "pol$disk0:"
+  set/dir  "[polmgr.data]"
+  set/ext  "raw"
+  infile = cfn(i)
+  set/file infile
+ 
+  set/disk "ss:"
+  set/dir  ""
+  set/ext "note"
+  outfile = cfn(i)
+
+  notebook <~ get("note") 
+  h=asciifile:open:new(outfile)
+  asciifile/writefree h _ " " notebook 
+  asciifile/close h
+
+ ENDLOOP
+
+ENDPROCEDURE

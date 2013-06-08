@@ -1,0 +1,61 @@
+FORWARD init_time
+FORWARD timer
+
+PROCEDURE dummy
+RETURN
+ENDPROCEDURE
+
+PROCEDURE time_test3
+GLOBAL _time _total_time _ntest
+LOCAL nrep name a b
+ print "\n"
+
+ init_time
+
+# nrep = 20000
+# LOOP i FROM 1 TO nrep; ENDLOOP
+# name = "Empty loop "+as_string(nrep)+" times"
+# timer name 
+
+ nrep = 100000
+ LOOP i FROM 1 TO nrep
+  dummy
+ ENDLOOP
+ name = "Call empty procedure "+as_string(nrep)+" times"
+ timer name 
+
+ nrep = 200000
+ LOOP i FROM 1 TO nrep
+  a=i+1
+ ENDLOOP
+ name = "Add "+as_string(nrep)+" integer scalars and store"
+ timer name 
+
+ nrep = 50000
+ LOOP i FROM 1 TO nrep
+  a = i + i - 2
+  b = a / 2 + 1
+  IF (b!=i); printen "You screwed up "i" "a" "b; ENDIF
+ ENDLOOP
+ name = as_string(nrep)+" scalar loops each of 5 ops, 2 =, 1 if"
+ timer name 
+
+ENDPROCEDURE
+
+PROCEDURE init_time
+GLOBAL _time _total_time _ntest
+_total_time = 0.0
+_ntest = 0
+ENDPROCEDURE
+
+PROCEDURE timer
+PARAMETERS name=STRING
+GLOBAL _time _total_time _ntest
+LOCAL t tt
+t = now:sec()/10.0
+_ntest = _ntest + 1
+tt = t - _time
+_total_time = _total_time + tt
+_time = now:sec()/10.0
+printin "\t"_ntest"\t"tt"\t"name
+ENDPROCEDURE

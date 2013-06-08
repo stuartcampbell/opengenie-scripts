@@ -1,0 +1,43 @@
+PROCEDURE in10
+ PARAMETERS filename=STRING specno=INTEGER
+
+ LOCAL nspec
+
+ nspec = 8
+
+ENDPROCEDURE
+
+PROCEDURE read_header
+ PARAMETERS filename=STRING
+ RESULT res
+ LOCAL sicfile tmp
+
+ res = fields()
+ 
+ print "\n"
+
+ sicfile=asciifile:open(filename)
+ tmp = asciifile:readfixed(sicfile,"line","%80c", 1) # line of R's
+ tmp = asciifile:readfixed(sicfile,"run_no","%8d",1) # Run Number 
+ res.run_no=as_string(tmp.run_no[1])
+ tmp = asciifile:readfixed(sicfile,"line","%80c", 1) # line of A's
+ tmp = asciifile:readfixed(sicfile,"nchar","%6d", 1) # No of characters
+ tmp = asciifile:readfixed(sicfile,"inst,rb,ctime","%4c%10c%18c",1) 
+ res.inst_name=tmp.inst[1]; res.rb_no=tmp.rb[1]; res.create_time=tmp.ctime[1]
+ tmp = asciifile:readfixed(sicfile,"line","%80c", 1) # line of I's
+ tmp = asciifile:readfixed(sicfile,"nint","%6d",1)   # No of integers to read
+ tmp.medpar = dimensions(tmp.nint[1])
+ tmp = asciifile:readfixed(sicfile,"medpar","%4d10",1)
+
+ printn tmp.medpar
+
+ printin " Run number \t\t :" res.run_no
+ printin " Instrument \t\t :" res.inst_name
+ printin " Run number \t\t :" res.rb_no
+ printin " Creation Time \t\t :" res.create_time
+
+ asciifile/close sicfile
+
+# tmp = asciifile:readfixed(sicfile,)
+ENDPROCEDURE
+

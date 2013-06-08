@@ -1,0 +1,14 @@
+PROCEDURE memory1
+
+LOCAL a n
+
+ n = 100000
+
+ LOOP i FROM 1 TO 100000
+  a = dimensions(n)
+  fill a 0.0 
+  free "a"
+  printin "Loop Number :"i
+ ENDLOOP
+
+ENDPROCEDURE
