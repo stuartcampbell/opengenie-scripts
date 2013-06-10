@@ -1,0 +1,165 @@
+# ENGINFOCUS :- General ENGIN focussing routine
+#
+# Stuart Campbell (ISIS) (20/10/98)
+#
+#
+
+ PROCEDURE enginfocus
+ QUALIFIERS /L /R /NOBACK 
+ PARAMETERS nrun=integer tmin=real tmax=real back=integer van=integer &
+            det=integer 
+
+  RESULT res
+
+  GLOBAL q pars
+
+  LOCAL nrun n tlimits av_pars side
+  LOCAL det_file van_file back_file 
+  LOCAL tmp par_file bckgrd vanadium monitor area
+
+
+  IF called_as_function()
+
+   IF (DEFINED(nrun)=$FALSE)
+    nrun = inquire("Enter run number")
+   ENDIF
+
+  IF (L)
+   side = "l"
+  ENDIF	
+  IF (R)
+   side = "r"
+  ENDIF	
+
+  IF NOT DEFINED(side)
+   side = inquire("Which side do you wish to focus ? (L/R)")
+  ENDIF
+
+   assign nrun
+
+# determine which detector, background and vanadium files are to be used
+
+   IF DEFINED(back)
+	printen "SORRY THIS DOESN'T WORK AT THE MOMENT!"
+	RETURN
+   ELSE
+#    back_file = "teb_calib_empty:ef5137.dat"
+    back_file = "ef5137.dat"
+   ENDIF
+
+   IF DEFINED(van)
+	printen "SORRY THIS DOESN'T WORK AT THE MOMENT!"
+	RETURN
+   ELSE
+#    van_file = "teb_calib_van:ef223054.his"
+    van_file = "ef223054.his"
+   ENDIF
+
+   IF DEFINED(det)
+	printen "SORRY THIS DOESN'T WORK AT THE MOMENT!"
+	RETURN
+   ELSE
+#    det_file = "teb_opengenie:engin"+side+"_10_98.det"
+    det_file = "engin"+side+"_10_98.det"
+   ENDIF
+               
+#
+# Read in detector parameters from file.
+#
+  par_file = asciifile:open(det_file,comment="#")  
+   tlimits = asciifile:readfree(par_file, "min,max", count=1) 
+   av_pars = asciifile:readfree(par_file, "l1,l2,twotheta", count=1) 
+  asciifile/readfree par_file "NSPEC,L1,L2,TWOTHETA,EMODE,EFIXED" &
+   count=-1
+  pars = asciifile:data(par_file)
+  asciifile/close par_file
+              
+  IF defined(tmin)
+   tlimits.min[1] = tmin
+  ENDIF
+  IF defined(tmax)
+   tlimits.max[1] = tmax
+  ENDIF
+
+  n = length(pars.nspec)
+
+  res=focus:d(pars.nspec,specpars=pars)
+                       
+# Normalise to incident beam monitor
+ 
+  monitor=s(1)
+  area=integrate(monitor,5000.0,5400.0)
+  res = res / area.sum
+              
+  res.twotheta = av_pars.twotheta[1]
+  res.l1 = av_pars.l1[1]
+  res.l2 = av_pars.l2[1]
+  units/t res
+
+   q=res
+
+   rebin res tlimits.min[1] tlimits.max[1]
+
+   res.y = res.y * (252.82*2.0*(sum(pars.l1))/n)
+   res.e = res.e * (252.82*2.0*(sum(pars.l1))/n)
+  
+# Subtract instrumental background
+  
+  IF (NOBACK)
+    printin "Not subtracting an instrumental background"
+  ELSE
+    bckgrd = get(1,back_file)
+    bckgrd=rebin(bckgrd,res.x)
+    res = res - bckgrd
+  ENDIF
+
+# Normalise to vanadium spectrum
+ 
+  IF (side = "l")
+   vanadium = get(1,van_file)
+  ELSE
+   vanadium = get(2,van_file)
+  ENDIF
+
+  vanadium = rebin(vanadium,res.x)
+  res = res / vanadium
+ 
+  rebin res tlimits.min[1] tlimits.max[1]
+ 
+ ELSE
+  printen "Please call this routine in the form of a function"
+ ENDIF
+
+ ENDPROCEDURE
+
+##############################################################
+
+ PROCEDURE bin
+ QUALIFIERS /BOTH /L /R
+ PARAMETERS nrun=INTEGER
+ LOCAL output_file tmp
+                        
+  IF (L)
+   output_file = as_string(nrun)+"l.his"
+   tmp=enginfocus:l:noback(nrun)
+   put/g2/new tmp file=output_file
+   printin "Writing LEFT data to file : " output_file
+  ENDIF
+  IF (R)
+   output_file = as_string(nrun)+"r.his"
+   tmp=enginfocus:r:noback(nrun)
+   put/g2/new tmp file=output_file
+   printin "Writing RIGHT data to file : " output_file
+  ENDIF
+  IF (BOTH)
+   output_file = as_string(nrun)+".his"
+   tmp=enginfocus:l:noback(nrun)
+   put/g2/new tmp file=output_file
+   tmp=enginfocus:r:noback(nrun)
+   put tmp file=output_file
+   printin "Writing ALL data to file : " output_file
+  ENDIF
+
+
+ ENDPROCEDURE
+

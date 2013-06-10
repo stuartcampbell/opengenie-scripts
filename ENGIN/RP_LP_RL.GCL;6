@@ -1,0 +1,91 @@
+PROCEDURE rp_lp_rl
+ 
+ LOCAL firstrun lastrun firstbank lastbank calib_file temp string cmdstr
+
+ IF (OS()="VMS") 
+  printen "Sorry - won't work on this platform."
+  RETURN
+ ENDIF
+
+ firstrun = inquire_integer("Enter first run")
+ lastrun = inquire_integer("Enter last run")
+ runsrce = inquire_integer("Source run number")
+
+ firstbank = 1
+ lastbank = 2
+
+ calib_file = "i251198n.prl"
+
+ printin "Default calibration file is :"calib_file
+ temp = inquire_string_null("New calib file (RETURN if no change):")
+ IF (length(temp)>0)
+   calib_file = temp
+ ENDIF
+
+ LOOP bank FROM firstbank TO lastbank
+  
+  IF (bank=1)
+   cbank = "L"
+  ELSEIF (bank=2)
+   cbank = "R"
+  ELSE
+   printen "Don't recongnise that bank number"
+  ENDIF
+
+  cmdstr = "cd > rep"+cbank+".log"
+  system cmdstr
+ 
+  
+  filename = "rep"+cbank+".log"
+  sic_file = asciifile:open(filename)
+  string = "logfile for replace batch job" 
+  asciifile/writefree sic_file _ _ string
+  asciifile/close sic_file
+
+  LOOP runnum FROM firstrun TO lastrun
+
+  cmdstr = "copy "+as_string(runsrce)+cbank+".exp "+as_string(runnum)+&
+	     cbank+".exp >> rep.log"
+  system cmdstr
+  string = dimensions(200)
+
+  string[1] = "k p h"
+  string[2] = "r 1"
+  string[3] = as_string(runnum)+cbank+".dat"
+  string[4] = "y"
+  string[5] = calib_file
+  string[6] = as_string(bank)
+  string[7] = "n"
+  string[8] = "d"
+  string[9] = "/"
+  string[10] = "x"
+  string[11] = "x"
+  string[12] = "t"
+  string[13] = "t"
+  string[14] = "RUN "+as_string(runnum)+" BANK "+as_string(bank)+"("cbank+")"
+  string[15] = "x x x x x"
+  string[16] = "l l c 10"
+  string[17] = "x x x x x"
+  string[18] = "x"
+
+  filename = "temp"+cbank+".txt"
+  sic_file = asciifile:open(filename)
+  asciifile/writefree sic_file _ _ string
+  asciifile/close sic_file
+
+  printin "******* Starting filenumber: " runnum cbank
+  cmdstr = "expedt "+as_string(runnum)+cbank+" < temp"+cbank+".txt >> rep"+ &
+           cbank+".log"
+  system cmdstr
+# cmdstr = "powpref "+as_string(runnum)+cbank+" >> rep"+cbank+".log"
+  cmdstr = "powpref "+as_string(runnum)+cbank
+  system cmdstr
+#  cmdstr = "genles "+as_string(runnum)+cbank+" >> rep"+cbank+".log"
+  cmdstr = "genles "+as_string(runnum)+cbank
+  system cmdstr
+
+  ENDLOOP
+
+ ENDLOOP
+
+ENDPROCEDURE

@@ -1,0 +1,21 @@
+PROCEDURE allocate
+ PARAMETERS n=INTEGER
+ RESULT res
+ LOCAL tmp
+
+ tmp = fields()
+ IF NOT defined(n)
+  tmp.n = inquire("Size of array :")
+ ELSE
+  tmp.n = n
+ ENDIF
+
+ module/compile "allocate.f90" symbols="test_alloc"
+
+ module/load "allocate.so"
+ tmp = module:execute("test_alloc",tmp)
+ module/unload "allocate.so"
+ 
+ res = tmp.a
+
+ENDPROCEDURE

@@ -1,0 +1,11 @@
+PROCEDURE ref_info
+ PARAMETERS fitlist=STRING adir=STRING file=STRING
+
+ IF defined(file)
+  myfile = asciifile:open(file)
+ ELSE   
+  
+ ENDIF 
+
+ENDPROCEDURE
+

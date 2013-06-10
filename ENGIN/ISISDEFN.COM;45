@@ -1,0 +1,47 @@
+$!  Definitions for automatic refinement routines for ENGIN
+$! Modified by Ian Harris 7/9/95 for single batch queue on pearl
+$  DEFINE utilityn pearl$dka0:[tebmgr.programs.analysis]
+$  NISISBIN == "@utilityn:ISISBIN.COM"
+$  BIN2 == "@utilityn:ISISBIN2.COM"
+$  BIN3 == "@utilityn:BIN_10_94.COM"
+$  BIN4 == "@utilityn:BIN_12_94.COM
+$  BIN5 == "@utilityn:BIN_1_95.COM
+$  BIN6 == "@utilityn:BIN_3_95.COM
+$  BIN7 == "@utilityn:BIN_5_95.COM
+$  BIN8 == "@utilityn:BIN_7_95.COM"
+$  BIN9 == "@utilityn:BIN_10_95.COM"
+$  BIN10 == "@utilityn:BIN_11_95.COM"
+$  BIN11 == "@utilityn:BIN_12_95.COM"
+$  BIN12 == "@utilityn:BIN_6_96.COM"
+$  BIN13 == "@utilityn:BIN_7_96.COM"
+$  BIN14 == "@utilityn:BIN_9_96.COM"
+$  BIN14a == "@utilityn:BIN_9_96a.COM"
+$  BIN15 == "@utilityn:BIN_11_96.COM"
+$  BIN16 == "@utilityn:BIN_12_96.COM"
+$  BIN17 == "@utilityn:BIN_2_97.COM"
+$  BIN18 == "@utilityn:BIN_3_97.COM"
+$  BIN19 == "@utilityn:BIN_7_97.COM"
+$  BIN20 == "@utilityn:BIN_8_97.COM"
+$  BIN21 == "@utilityn:BIN_12_97.COM"
+$  BIN22 == "@utilityn:BIN_1_98.COM"
+$  BIN23 == "@utilityn:BIN_4_98.COM"
+$  BIN23D == "@utilityn:BIND_4_98.COM"
+$  BIN24 == "@utilityn:BIN_5_98.COM"
+$  BIN25 == "@utilityn:BIN_10_98.COM"
+$  NISISREF == "@utilityn:ISISREF.COM"
+$  NEXTRACT == "@utilityn:EXTRACT.COM"
+$  NCOMBINE == "@utilityn:COMBINE.COM"
+$  NMERGERUNS == "@utilityn:MERGE_RUNS.COM"
+$  NSTRAIN == "RUN utilityn:STRAIN"
+$  NLSTRAIN == "RUN utilityn:LATSTRAIN"
+$  NCLEANUP == "@utilityn:CLEAN_UP.COM"
+$  NPRINTOUT == "RUN UTILITYN:PRINTOUT"
+$! marks additions
+$  grep == "@pearl$dka0:[prlmgr.gsas]replace_gsas.com"
+$  ggsasl == "@pearl$dka0:[prlmgr.progs.gsasbat]ggsas_l.com" 
+$  ggsasr == "@pearl$dka0:[prlmgr.progs.gsasbat]ggsas_r.com" 
+$  bin20n == "@pearl$dka0:[prlmgr.progs.nonorm]BIN_8_97NN.COM"
+$  bin23n == "@pearl$dka0:[prlmgr.progs.nonorm]BIN_4_98NN.COM"
+$  sp_create == "run user$disk:[mrd.bin]filecr"
+$  sp_fit == "run user$disk:[mrd.bin]resfit2"
+$  sp_post == "run user$disk:[mrd.bin]postproc"

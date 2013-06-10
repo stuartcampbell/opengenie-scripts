@@ -1,0 +1,69 @@
+PROCEDURE isisref
+ QUALIFIERS /BATCH
+ PARAMETERS file=STRING pictic=STRING
+ 
+ LOCAL queue adir iparm myfile runfit fitlist first dummy command_string
+
+ printn "\n"
+
+ fitlist = ""
+ dummy = ""
+ first = "TRUE"
+
+ IF (pictic = "") OR (pictic = _)
+  pictic = "NONE"
+ ENDIF 
+
+ IF (BATCH)
+  queue = "pearl$batch"
+ ENDIF
+
+ IF defined(file) 	# read from file
+  printen "ISISREF - Sorry unable to read files at the moment"
+ ELSE
+  printn " Enter directory of stored binned data file(s)."
+  adir = inquire(" (Example: scratch$disk:[you01]) ")
+  printn "" 
+  printn " Enter file specification of the instrument constants"
+  iparm = inquire(" (Example: utilityn:si_20051.iparm)")
+  printn "" 
+
+  file = as_string(adir)+"run.input"
+  myfile = asciifile:open(file)
+  asciifile/writefree myfile _ _ adir
+  asciifile/writefree myfile _ _ iparm
+
+  LOOP
+  printn " Enter the run number and banks (space separated) of the data" &
+	   " to be refined"  
+  runfit = inquire(" (Example: 1218 L R means run# 1218 and banks L (left) and R (right)), <CR> to end ")
+
+  IF (first = "TRUE")
+   fitlist = fitlist + as_string(runfit)
+   first = "FALSE"
+  ELSE
+   fitlist = fitlist + "/" + as_string(runfit)
+  ENDIF
+
+  asciifile/writefree myfile _ _ runfit
+
+  EXITIF runfit = ""
+  ENDLOOP
+
+ ENDIF
+
+  asciifile/writefree myfile _ _ dummy
+  asciifile/close myfile
+
+  ref_info fitlist adir file
+
+  IF (batch)
+   command_string = "submit/queue="+queue+"/name=batchref/notify/nolog"  &
+   +" utilityn:batchref.com /parameters=("+fitlist+","+as_string(ntimes) &
+   +","+adir+","+file+","+iparm+","+pictic+")"
+   printn command_string
+  ELSE
+  
+  ENDIF
+
+ENDPROCEDURE

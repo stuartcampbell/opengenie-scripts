@@ -1,0 +1,83 @@
+# Routine to produce a 2d plot from a workspace containing more
+# than one spectra (e.g. as produced by "w=get(3:43)")
+#
+# Stuart Campbell (Sept 1999)
+#
+PROCEDURE disp2d
+QUALIFIERS /LOG2D /LINEAR2D /SQRT2D /RAW2D /SMOOTH2D
+PARAMETERS data p2 p3 p4 p5 min max
+LOCAL xmin xmax ymin ymax zmin zmax lower_x lower_y upper_x upper_y
+LOCAL d x y mycell spec_old
+LOCAL wxmin wxmax wymin wymax
+LOCAL ltop xoff yoff
+	
+# data.institute = "ISIS"
+
+  d = data.y
+  y = centre_bins(data.x)
+
+ ymin = min(y)
+ ymax = max(y)
+ zmin = 0.0
+ zmax = max(d)
+ xmax = as_variable(data.spec_no)*1.0
+ xmin = xmax - length(data.l2)*1.0 + 1.0
+
+	spec_old = data.spec_no
+
+ x = dimensions(as_integer(xmax-xmin+1))
+ fill x xmin 1.
+ 
+ IF DEFINED(p2); xmin = p2*1.0; ENDIF
+ IF DEFINED(p3); xmax = p3*1.0; ENDIF
+ IF DEFINED(p4); ymin = p4*1.0; ENDIF
+ IF DEFINED(p5); ymax = p5*1.0; ENDIF
+ IF DEFINED(min); zmin = min*1.0; ENDIF
+ IF DEFINED(max); zmax = max*1.0; ENDIF
+ 
+ data.spec_no = as_string(as_integer(xmin))+" - "+as_string(as_integer(xmax))
+
+# if required, put a title box at the top
+	IF _SDJ_GW.HEADER
+		__G2_BANNER DATA.INST_NAME DATA.RUN_NO DATA.SPEC_NO DATA.FILE &
+		DATA.USER_NAME DATA.TIME AS_STRING(DATA.BIN_GROUPING) "ISIS"
+	ENDIF
+
+# if header is OFF, leave space above plot
+	IF _SDJ_GW.HEADER
+	    LTOP = 0.8
+	ELSE
+	    LTOP = 1.0
+	ENDIF
+
+# plot the box around the plot area
+	WXMIN = _SDJ_GW.LEFT
+	WXMAX = _SDJ_GW.RIGHT
+	WYMIN = _SDJ_GW.BOTTOM
+	WYMAX = _SDJ_GW.TOP * LTOP
+
+# create the plotting window
+	XOFF = 0.12 *(WXMAX - WXMIN)
+	YOFF = 0.11 *(WYMAX - WYMIN)
+	WXMIN = WXMIN + XOFF
+	WXMAX = WXMAX - XOFF
+	WYMIN = WYMIN + YOFF
+	WYMAX = WYMAX - YOFF
+
+ win_scaled wxmin wxmax wymin wymax xmin xmax ymin ymax
+ 
+ mycell=cell_array:draw(values=d,xarray=x,yarray=y,table=colourtable:rainbow(80) &
+ ,valmax=zmax,valmin=zmin,log=log2d,linear=linear2d,smooth=smooth2d,sqrt=sqrt2d &
+ ,raw=raw2d)
+
+ axes/draw
+
+ title/draw data.title
+ labels/draw "Spectrum Number" data.xlabel
+
+ win_unscaled wxmax+0.06 wxmax+0.11 wymin wymax
+ cell_wedge/draw/vertical object=mycell
+ axes/draw/noxnum
+
+ data.spec_no = spec_old
+ENDPROCEDURE
