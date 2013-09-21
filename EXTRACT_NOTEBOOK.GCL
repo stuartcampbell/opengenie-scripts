@@ -1,3 +1,4 @@
+# Routine to extract the notebook section from a RAW file.
 
 PROCEDURE extract_notebook
  PARAMETERS first_run=INTEGER last_run=INTEGER
