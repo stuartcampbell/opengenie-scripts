@@ -1,3 +1,6 @@
+# Little test procedure to dynamically allocate an array 
+# using a fortran module.
+
 PROCEDURE allocate
  PARAMETERS n=INTEGER
  RESULT res
