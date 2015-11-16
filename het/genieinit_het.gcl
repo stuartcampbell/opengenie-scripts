@@ -1,0 +1,126 @@
+# HET Startup file for OpenGENIE
+# S I Campbell 14/10/98
+
+toggle/info/off
+
+alias "d" "display"
+alias "p" "plot"
+alias "ass" "assign"
+alias "d/h" "display/histogram"
+alias "d/e" "display/errors"
+alias "d/l" "display/line"
+alias "d/m" "display/markers"
+alias "p/h" "plot/histogram"
+alias "p/e" "plot/errors"
+alias "p/l" "plot/line"
+alias "p/m" "plot/markers"
+alias "l" "limits"
+alias "l/x" "limits/x"
+alias "l/y" "limits/y"
+alias "a/b" "alter/binning"
+alias "a/m" "alter/markers"
+
+ set/inst "het"
+ set/ext  "raw"
+
+ IF (OS()="VMS")
+  set/disk "het_data:"
+ ENDIF
+
+#PROCEDURE het
+ load "user$disk:[sic01.opengenie.init]sic_useful.gcl"
+ load "og:read_cur.gcl"
+ load "og:look.gcl"
+ load "og:iliad.gcl"
+ load "og:loadlog.gcl"
+ alias "sumspec_old" "sumspec"
+ load "og:sumspec.gcl"
+ load "og:dspace.gcl"
+ load "user$disk:[sic01.opengenie.utils]fit.gcl"
+ load "user$disk:[sic01.opengenie.het]see.gcl"
+#ENDPROCEDURE
+
+toggle/info/on
+
+##################################################################
+# These routines provide basic reading/writing for ASCII files
+# Stuart Campbell (April 1998)
+##################################################################
+PROCEDURE writexye
+ PARAMETERS W=workspace FILE=string 
+ LOCAL myfile
+  myfile=asciifile:open(file)
+  asciifile/writefree myfile _ " " W.x W.y W.e
+  asciifile/close myfile
+ENDPROCEDURE
+
+PROCEDURE readxy
+ PARAMETERS FILE=string
+ RESULT res
+ LOCAL myfile
+  myfile = asciifile:open(file,comment="#")
+  asciifile/readfree myfile "X,Y" count=-1
+  res = asciifile:data(myfile)
+  asciifile/close myfile
+  res.file=file
+ENDPROCEDURE
+
+PROCEDURE readxye
+ PARAMETERS FILE=string
+ RESULT res
+ LOCAL myfile
+  myfile = asciifile:open(file,comment="#")
+  asciifile/readfree myfile "X,Y,E" count=-1
+  res = asciifile:data(myfile)
+  asciifile/close myfile
+  res.file=file
+ENDPROCEDURE
+
+
+##################################################################
+# Some useful little routines (SIC)                                    
+##################################################################
+
+PROCEDURE crpt
+ PARAMETERS nr=INTEGER 
+ RESULT out
+ LOCAL string
+ IF called_as_function()
+  string="/.:/servers/het_dae"
+  printin string
+  out=get(nr,string)
+ ELSE
+  set/file "/.:/servers/het_dae"
+ ENDIF
+ENDPROCEDURE
+
+PROCEDURE dae
+  set/file "/.:/servers/het_dae"
+ENDPROCEDURE
+
+PROCEDURE pp
+PARAMETERS WORK=workspace
+	alter/linetype $dash
+	alter/plotcolour $red
+	plot WORK
+	alter/linetype $full
+ENDPROCEDURE
+
+PROCEDURE newin
+	device/open "xw" 6.5 4.5
+ENDPROCEDURE
+
+PROCEDURE newwin
+	device/open "xw" 6.5 4.5
+ENDPROCEDURE
+
+PROCEDURE smallwin
+	device/open "xw" 4.5 3.0
+ENDPROCEDURE
+
+PROCEDURE sqwin
+	device/open "xw" 5.0 5.0
+ENDPROCEDURE
+
+##################################################################
+�������������������������������������������
